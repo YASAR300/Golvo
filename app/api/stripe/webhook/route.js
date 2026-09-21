@@ -51,6 +51,9 @@ export async function POST(request) {
 
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
           await syncSubscription(subscription, session.metadata?.user_id);
+        } else if (session.mode === "payment" && session.metadata?.type === "independent") {
+          // Record independent charity donation
+          await handleIndependentDonation(session);
         }
         break;
       }
@@ -284,3 +287,36 @@ async function handleInvoicePaid(invoice) {
     console.warn("Prize pool allocation update notice:", drawErr?.message);
   }
 }
+
+/**
+ * Records one-time independent charity donations
+ */
+async function handleIndependentDonation(session) {
+  const charityId = session.metadata?.charity_id;
+  const rawUserId = session.metadata?.user_id;
+  const userId = rawUserId && rawUserId !== "anonymous" ? rawUserId : null;
+  const amountCents = session.amount_total || 0;
+
+  if (!charityId || amountCents <= 0) return;
+
+  try {
+    const { error } = await adminClient.from("donations").insert({
+      user_id: userId,
+      charity_id: charityId,
+      amount_cents: amountCents,
+      type: "independent",
+      stripe_payment_id: session.payment_intent || session.id,
+    });
+
+    if (error) {
+      console.error("Failed to record independent donation:", error);
+    } else {
+      console.log(
+        `Recorded independent donation of $${(amountCents / 100).toFixed(2)} to charity ${charityId}`
+      );
+    }
+  } catch (err) {
+    console.error("Exception recording independent donation:", err);
+  }
+}
+

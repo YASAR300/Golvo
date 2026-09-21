@@ -20,6 +20,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Logo } from "@/components/ui/Logo";
 import { UserMenu } from "@/components/ui/UserMenu";
 import { ScoreManager } from "@/components/dashboard/ScoreManager";
+import { CharitySettingsModal } from "@/components/dashboard/CharitySettingsModal";
 import { SparkleStar } from "@/components/doodles";
 import { createClient } from "@/lib/supabase/client";
 
@@ -31,6 +32,7 @@ export default function DashboardPage() {
   const [scores, setScores] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingPortal, setIsLoadingPortal] = useState(false);
+  const [isCharityModalOpen, setIsCharityModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -332,7 +334,7 @@ export default function DashboardPage() {
                     </CardTitle>
                   </div>
                   <span className="text-xs text-[#4CC38A] font-mono font-semibold">
-                    10% Pledged
+                    {profile?.charity_percent || 10}% Pledged
                   </span>
                 </div>
                 <CardDescription className="text-xs text-[#8A8F98]">
@@ -355,19 +357,52 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="text-center pt-1">
-                  <Link
-                    href="/complete-profile"
-                    className="text-xs text-[#8A95FF] hover:text-white transition-colors inline-flex items-center gap-1.5"
+                  <button
+                    type="button"
+                    onClick={() => setIsCharityModalOpen(true)}
+                    className="text-xs text-[#8A95FF] hover:text-white transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                   >
-                    <span>Change designated charity</span>
+                    <span>Change charity &amp; contribution %</span>
                     <ExternalLink className="w-3 h-3" />
-                  </Link>
+                  </button>
                 </div>
               </CardContent>
             </Card>
           </div>
         </div>
       </main>
+
+      {/* Charity Give-Back Settings Modal */}
+      <CharitySettingsModal
+        isOpen={isCharityModalOpen}
+        onClose={() => setIsCharityModalOpen(false)}
+        onUpdated={() => {
+          // Re-fetch profile data
+          const supabase = createClient();
+          supabase.auth.getUser().then(({ data }) => {
+            if (data?.user) {
+              supabase
+                .from("profiles")
+                .select("id, full_name, email, role, charity_id, charity_percent")
+                .eq("id", data.user.id)
+                .maybeSingle()
+                .then(({ data: p }) => {
+                  if (p) setProfile(p);
+                  if (p?.charity_id) {
+                    supabase
+                      .from("charities")
+                      .select("id, name, slug, description")
+                      .eq("id", p.charity_id)
+                      .maybeSingle()
+                      .then(({ data: ch }) => {
+                        if (ch) setCharity(ch);
+                      });
+                  }
+                });
+            }
+          });
+        }}
+      />
     </div>
   );
 }
