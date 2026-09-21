@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { ArrowRight, Lock, Mail, User, Heart, Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Lock, Mail, User, Heart, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -23,6 +24,7 @@ const defaultCharityOptions = [
 ];
 
 export default function SignupPage() {
+  const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,8 +34,6 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
 
   const handleGoogleSignUp = async () => {
     setIsGoogleLoading(true);
@@ -109,11 +109,9 @@ export default function SignupPage() {
         setErrorMessage(res.error);
         toast.error(res.error);
         setIsLoading(false);
-      } else if (res?.requiresEmailConfirmation) {
-        setIsSuccess(true);
-        setSuccessMessage(res.message);
-        toast.success("Account created! Check your email.");
-        setIsLoading(false);
+      } else {
+        toast.success("Welcome to Golvo!");
+        router.push("/dashboard");
       }
     } catch {
       // Next.js redirect
@@ -160,131 +158,106 @@ export default function SignupPage() {
           </div>
         )}
 
-        {isSuccess ? (
-          <div className="space-y-5 text-center py-4">
-            <div className="w-12 h-12 rounded-full bg-[#4CC38A]/10 border border-[#4CC38A]/30 flex items-center justify-center mx-auto text-[#4CC38A]">
-              <CheckCircle2 className="w-6 h-6" />
+        {/* Google OAuth Button */}
+        <div className="mb-6">
+          <Button
+            type="button"
+            variant="secondary"
+            size="md"
+            onClick={handleGoogleSignUp}
+            isLoading={isGoogleLoading}
+            leftIcon={!isGoogleLoading && <GoogleIcon size={18} />}
+            className="w-full h-11 text-sm font-medium bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.1] text-white transition-all shadow-sm flex items-center justify-center gap-2"
+          >
+            {isGoogleLoading ? "Connecting to Google..." : "Sign up with Google"}
+          </Button>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/[0.08]" />
             </div>
-            <div className="space-y-1.5">
-              <h2 className="text-base font-semibold text-white">
-                Check your email
-              </h2>
-              <p className="text-xs text-[#8A8F98] max-w-sm mx-auto leading-relaxed">
-                {successMessage}
-              </p>
-            </div>
-            <div className="pt-2">
-              <Link href="/login">
-                <Button variant="secondary" size="md" className="w-full">
-                  Return to Sign In
-                </Button>
-              </Link>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-[#0F1011] px-3 text-[#8A8F98] text-[11px] tracking-wider font-medium">
+                Or register with email
+              </span>
             </div>
           </div>
-        ) : (
-          <>
-            {/* Google OAuth Button */}
-            <div className="mb-6">
-              <Button
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input
+            label="Full Name"
+            type="text"
+            placeholder="Rory McIlroy"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+            autoComplete="name"
+            leftIcon={<User className="w-4 h-4" />}
+          />
+
+          <Input
+            label="Email Address"
+            type="email"
+            placeholder="golfer@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            leftIcon={<Mail className="w-4 h-4" />}
+          />
+
+          <Input
+            label="Password (min. 8 characters + 1 number)"
+            type={showPassword ? "text" : "password"}
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="new-password"
+            leftIcon={<Lock className="w-4 h-4" />}
+            rightIcon={
+              <button
                 type="button"
-                variant="secondary"
-                size="md"
-                onClick={handleGoogleSignUp}
-                isLoading={isGoogleLoading}
-                leftIcon={!isGoogleLoading && <GoogleIcon size={18} />}
-                className="w-full h-11 text-sm font-medium bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.1] text-white transition-all shadow-sm flex items-center justify-center gap-2"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="text-[#8A8F98] hover:text-white transition-colors focus:outline-none"
               >
-                {isGoogleLoading ? "Connecting to Google..." : "Sign up with Google"}
-              </Button>
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
+              </button>
+            }
+          />
 
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/[0.08]" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-[#0F1011] px-3 text-[#8A8F98] text-[11px] tracking-wider font-medium">
-                    Or register with email
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              label="Full Name"
-              type="text"
-              placeholder="Rory McIlroy"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+          {/* Charity Selector */}
+          <div className="space-y-1.5 pt-1">
+            <Select
+              label="Select Beneficiary Charity"
+              value={charityId}
+              onChange={(e) => setCharityId(e.target.value)}
               required
-              autoComplete="name"
-              leftIcon={<User className="w-4 h-4" />}
+              options={charities}
             />
+            <p className="text-[11px] text-[#4CC38A] flex items-center gap-1.5 pt-0.5">
+              <Heart className="w-3 h-3 shrink-0 text-[#EB5757]" />
+              <span>Min. 10% of your subscription goes to your chosen charity</span>
+            </p>
+          </div>
 
-            <Input
-              label="Email Address"
-              type="email"
-              placeholder="golfer@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              leftIcon={<Mail className="w-4 h-4" />}
-            />
-
-            <Input
-              label="Password (min. 8 characters + 1 number)"
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="new-password"
-              leftIcon={<Lock className="w-4 h-4" />}
-              rightIcon={
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  className="text-[#8A8F98] hover:text-white transition-colors focus:outline-none"
-                >
-                  {showPassword ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
-                </button>
-              }
-            />
-
-            {/* Charity Selector */}
-            <div className="space-y-1.5 pt-1">
-              <Select
-                label="Select Beneficiary Charity"
-                value={charityId}
-                onChange={(e) => setCharityId(e.target.value)}
-                required
-                options={charities}
-              />
-              <p className="text-[11px] text-[#4CC38A] flex items-center gap-1.5 pt-0.5">
-                <Heart className="w-3 h-3 shrink-0 text-[#EB5757]" />
-                <span>Min. 10% of your subscription goes to your chosen charity</span>
-              </p>
-            </div>
-
-            <Button
-              type="submit"
-              variant="primary"
-              size="md"
-              isLoading={isLoading}
-              className="w-full h-11 text-sm font-semibold mt-3"
-              rightIcon={!isLoading && <ArrowRight className="w-4 h-4" />}
-            >
-              {isLoading ? "Creating account..." : "Complete Registration"}
-            </Button>
-          </form>
-          </>
-        )}
+          <Button
+            type="submit"
+            variant="primary"
+            size="md"
+            isLoading={isLoading}
+            className="w-full h-11 text-sm font-semibold mt-3"
+            rightIcon={!isLoading && <ArrowRight className="w-4 h-4" />}
+          >
+            {isLoading ? "Creating account..." : "Complete Registration"}
+          </Button>
+        </form>
 
         <div className="mt-6 pt-5 border-t border-white/[0.06] text-center text-xs text-[#8A8F98]">
           Already have an account?{" "}

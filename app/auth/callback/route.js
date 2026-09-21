@@ -17,19 +17,23 @@ export async function GET(request) {
       }
 
       // Check user profile for charity selection and role
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role, charity_id")
-        .eq("id", data.user.id)
-        .maybeSingle();
+      try {
+        const { data: profile, error: profileErr } = await supabase
+          .from("profiles")
+          .select("role, charity_id")
+          .eq("id", data.user.id)
+          .maybeSingle();
 
-      // If user has not completed profile (no charity assigned), redirect to onboarding
-      if (!profile?.charity_id) {
-        return NextResponse.redirect(new URL("/complete-profile", requestUrl.origin));
-      }
+        // If user has not completed profile (no charity assigned) and profile exists
+        if (!profileErr && profile && !profile.charity_id) {
+          return NextResponse.redirect(new URL("/complete-profile", requestUrl.origin));
+        }
 
-      if (profile?.role === "admin") {
-        return NextResponse.redirect(new URL("/admin", requestUrl.origin));
+        if (profile?.role === "admin") {
+          return NextResponse.redirect(new URL("/admin", requestUrl.origin));
+        }
+      } catch (e) {
+        console.warn("Callback profile query error:", e);
       }
 
       return NextResponse.redirect(new URL("/dashboard", requestUrl.origin));

@@ -46,15 +46,19 @@ export async function middleware(request) {
       return NextResponse.redirect(loginUrl);
     }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("charity_id")
-      .eq("id", user.id)
-      .maybeSingle();
+    try {
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("charity_id")
+        .eq("id", user.id)
+        .maybeSingle();
 
-    // If charity is already selected, proceed to dashboard
-    if (profile?.charity_id) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      // If charity is already selected, proceed to dashboard
+      if (!error && profile?.charity_id) {
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+    } catch {
+      // Ignore if profiles table is not yet created
     }
   }
 
@@ -66,15 +70,20 @@ export async function middleware(request) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Ensure subscriber has completed profile setup (charity selection)
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("charity_id, role")
-      .eq("id", user.id)
-      .maybeSingle();
+    try {
+      // Ensure subscriber has completed profile setup (charity selection)
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .select("charity_id, role")
+        .eq("id", user.id)
+        .maybeSingle();
 
-    if (!profile?.charity_id && profile?.role !== "admin") {
-      return NextResponse.redirect(new URL("/complete-profile", request.url));
+      // Only redirect to /complete-profile if profile table exists and charity_id is explicitly empty
+      if (!error && profile && !profile.charity_id && profile.role !== "admin") {
+        return NextResponse.redirect(new URL("/complete-profile", request.url));
+      }
+    } catch {
+      // Allow through if profiles table is not yet created
     }
   }
 

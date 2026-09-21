@@ -1,14 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, ArrowRight } from "lucide-react";
+import { Menu, X, ArrowRight, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Logo } from "@/components/ui/Logo";
+import { createClient } from "@/lib/supabase/client";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    try {
+      const supabase = createClient();
+      supabase.auth.getUser().then(({ data }) => {
+        setUser(data?.user || null);
+      });
+
+      const { data: authListener } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          setUser(session?.user || null);
+        }
+      );
+
+      return () => {
+        authListener?.subscription?.unsubscribe();
+      };
+    } catch {
+      // Ignore if Supabase is unavailable
+    }
+  }, []);
 
   const navLinks = [
     { label: "How it works", href: "#how-it-works" },
@@ -42,22 +65,37 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Desktop Right CTA */}
+        {/* Desktop Right CTA: Shows Dashboard if logged in, otherwise Log in / Get started */}
         <div className="hidden md:flex items-center gap-3">
-          <Link href="/login">
-            <Button variant="ghost" size="sm">
-              Log in
-            </Button>
-          </Link>
-          <Link href="/register">
-            <Button
-              variant="primary"
-              size="sm"
-              rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-            >
-              Get started
-            </Button>
-          </Link>
+          {user ? (
+            <Link href="/dashboard">
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<LayoutDashboard className="w-3.5 h-3.5" />}
+                rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+              >
+                Dashboard
+              </Button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="ghost" size="sm">
+                  Log in
+                </Button>
+              </Link>
+              <Link href="/signup">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                >
+                  Get started
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile menu hamburger toggle */}
@@ -91,16 +129,32 @@ export function Navbar() {
             ))}
           </div>
           <div className="pt-4 border-t border-white/[0.08] flex flex-col gap-2.5">
-            <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="secondary" size="md" className="w-full">
-                Log in
-              </Button>
-            </Link>
-            <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="primary" size="md" className="w-full">
-                Get started
-              </Button>
-            </Link>
+            {user ? (
+              <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                <Button
+                  variant="primary"
+                  size="md"
+                  className="w-full"
+                  leftIcon={<LayoutDashboard className="w-4 h-4" />}
+                  rightIcon={<ArrowRight className="w-4 h-4" />}
+                >
+                  Go to Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="secondary" size="md" className="w-full">
+                    Log in
+                  </Button>
+                </Link>
+                <Link href="/signup" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="primary" size="md" className="w-full">
+                    Get started
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
