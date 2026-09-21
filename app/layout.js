@@ -15,8 +15,36 @@ const caveat = Caveat({
 });
 
 export const metadata = {
-  title: "Golvo — Golf Performance & Charity Draws",
-  description: "Track your golf handicap, elevate your game, and enter exclusive charity prize draws.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://golvo.vercel.app"),
+  title: {
+    default: "Golvo — Golf Performance & Monthly Charity Draws",
+    template: "%s | Golvo",
+  },
+  description:
+    "Track your golf handicap, elevate your game with rolling 5-score Stableford analysis, and win monthly prize pools while funding non-profit causes.",
+  keywords: [
+    "golf handicap",
+    "stableford",
+    "charity golf",
+    "golf draw",
+    "prize pool",
+    "youth on course",
+  ],
+  authors: [{ name: "Golvo Team" }],
+  openGraph: {
+    title: "Golvo — Golf Performance & Monthly Charity Draws",
+    description:
+      "Play your rounds. Log certified scores. Win monthly jackpot prize pools while giving back to causes you care about.",
+    url: "https://golvo.vercel.app",
+    siteName: "Golvo",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Golvo — Golf Performance & Monthly Charity Draws",
+    description: "Track Stableford scores and enter automated monthly charity jackpot draws.",
+  },
   icons: {
     icon: [
       { url: "/icon.png", type: "image/png" },
@@ -25,6 +53,13 @@ export const metadata = {
     shortcut: "/icon.png",
     apple: "/apple-icon.png",
   },
+};
+
+export const viewport = {
+  themeColor: "#08090A",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({ children }) {
