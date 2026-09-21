@@ -189,11 +189,11 @@ export default function AdminLayout({ children }) {
             <button
               type="button"
               onClick={() => setPaletteOpen(true)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] bg-white/[0.04] border border-white/[0.08] hover:border-white/20 text-[#8A8F98] hover:text-white transition-all text-xs cursor-pointer group"
+              className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] hover:border-[#5E6AD2]/50 text-[#8A8F98] hover:text-white transition-all duration-200 text-xs cursor-pointer group shadow-sm hover:shadow-[0_0_20px_rgba(94,106,210,0.15)]"
             >
-              <Search className="w-3.5 h-3.5 text-[#8A8F98] group-hover:text-white transition-colors" />
-              <span className="hidden sm:inline">Search admin tools...</span>
-              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/10 text-[10px] font-mono text-white/70">
+              <Search className="w-3.5 h-3.5 text-[#8A8F98] group-hover:text-[#8590EA] transition-colors" />
+              <span className="hidden sm:inline font-medium">Quick search admin...</span>
+              <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-white/[0.06] border border-white/10 text-[10px] font-mono text-white/70 group-hover:border-[#5E6AD2]/40 group-hover:text-[#8590EA] transition-colors">
                 <span className="text-[9px]">⌘</span>K
               </kbd>
             </button>

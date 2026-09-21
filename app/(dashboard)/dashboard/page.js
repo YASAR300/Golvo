@@ -105,10 +105,10 @@ export default function DashboardOverviewPage() {
           .maybeSingle();
         setProfile(userProfile);
 
-        // 2. Load Subscription with Automatic Stripe Session Sync Fallback
+        // 2. Authoritative Subscription Status Check (Direct Stripe & Supabase Verification)
         let userSub = null;
 
-        // Check if redirected from Stripe Checkout with session_id
+        // Check if redirected from Stripe Checkout
         if (typeof window !== "undefined") {
           const urlParams = new URLSearchParams(window.location.search);
           const sessionId = urlParams.get("session_id");
@@ -136,33 +136,18 @@ export default function DashboardOverviewPage() {
           }
         }
 
-        // If not synced from URL parameter, query Supabase subscriptions
+        // Authoritative verification via /api/subscription/status
         if (!userSub) {
-          const { data: dbSub } = await supabase
-            .from("subscriptions")
-            .select("status, plan, current_period_end, cancel_at_period_end")
-            .eq("user_id", currentUser.id)
-            .eq("status", "active")
-            .maybeSingle();
-
-          userSub = dbSub;
-
-          // If still no active subscription found in Supabase, run background sync check with Stripe
-          if (!userSub) {
-            try {
-              const bgRes = await fetch("/api/stripe/sync-session", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({}),
-              });
-              if (bgRes.ok) {
-                const bgData = await bgRes.json();
-                if (bgData.subscription?.status === "active") {
-                  userSub = bgData.subscription;
-                  window.dispatchEvent(new Event("golvo:subscription_updated"));
-                }
+          try {
+            const statusRes = await fetch("/api/subscription/status");
+            if (statusRes.ok) {
+              const statusData = await statusRes.json();
+              if (statusData.isSubscribed && statusData.subscription) {
+                userSub = statusData.subscription;
               }
-            } catch {}
+            }
+          } catch (e) {
+            console.warn("Status check notice:", e);
           }
         }
 
@@ -268,17 +253,19 @@ export default function DashboardOverviewPage() {
 
   const handleOpenPortal = async () => {
     setIsLoadingPortal(true);
+    const toastId = toast.loading("Opening Stripe billing portal...");
     try {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
       const data = await res.json();
       if (data?.url) {
+        toast.success("Redirecting to Stripe...", { id: toastId });
         window.location.href = data.url;
       } else {
-        toast.error(data?.error || "Could not open customer billing portal.");
+        toast.error(data?.error || "Could not open customer billing portal.", { id: toastId });
         setIsLoadingPortal(false);
       }
     } catch {
-      toast.error("Billing portal request failed.");
+      toast.error("Billing portal request failed.", { id: toastId });
       setIsLoadingPortal(false);
     }
   };

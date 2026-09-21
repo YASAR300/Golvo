@@ -36,7 +36,15 @@ export function UserMenu({ user, profile, className = "" }) {
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
+    toast.loading("Signing out...", { id: "signout" });
     await logoutAction();
+  };
+
+  const copyEmail = () => {
+    if (navigator?.clipboard) {
+      navigator.clipboard.writeText(email);
+      toast.success("Email copied to clipboard!");
+    }
   };
 
   return (
@@ -66,7 +74,14 @@ export function UserMenu({ user, profile, className = "" }) {
                 {isAdmin ? "Admin" : "Subscriber"}
               </Badge>
             </div>
-            <p className="text-[11px] text-[#8A8F98] truncate">{email}</p>
+            <button
+              type="button"
+              onClick={copyEmail}
+              title="Click to copy email"
+              className="text-[11px] text-[#8A8F98] hover:text-white truncate block text-left transition-colors cursor-pointer"
+            >
+              {email}
+            </button>
           </div>
 
           {/* Navigation Links */}

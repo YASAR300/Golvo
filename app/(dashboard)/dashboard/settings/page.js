@@ -33,13 +33,21 @@ export default function DashboardSettingsPage() {
             .maybeSingle();
           setProfile(p);
 
-          const { data: sub } = await supabase
-            .from("subscriptions")
-            .select("*")
-            .eq("user_id", currentUser.id)
-            .eq("status", "active")
-            .maybeSingle();
-          setSubscription(sub);
+          // Authoritative Subscription Check
+          let userSub = null;
+          try {
+            const statusRes = await fetch("/api/subscription/status", { cache: "no-store" });
+            if (statusRes.ok) {
+              const statusData = await statusRes.json();
+              if (statusData.isSubscribed && statusData.subscription) {
+                userSub = statusData.subscription;
+              }
+            }
+          } catch (e) {
+            console.warn("Settings status check error:", e);
+          }
+
+          setSubscription(userSub);
         }
       } catch (err) {
         console.warn("Failed to load settings data:", err);
@@ -49,21 +57,32 @@ export default function DashboardSettingsPage() {
     }
 
     loadData();
+
+    const handleSubUpdated = () => {
+      loadData();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("golvo:subscription_updated", handleSubUpdated);
+      return () => window.removeEventListener("golvo:subscription_updated", handleSubUpdated);
+    }
   }, []);
 
   const handleOpenPortal = async () => {
     setIsLoadingPortal(true);
+    const toastId = toast.loading("Opening Stripe customer portal...");
     try {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
       const data = await res.json();
       if (data?.url) {
+        toast.success("Redirecting to Stripe...", { id: toastId });
         window.location.href = data.url;
       } else {
-        toast.error(data?.error || "Could not open billing portal.");
+        toast.error(data?.error || "Could not open billing portal.", { id: toastId });
         setIsLoadingPortal(false);
       }
     } catch {
-      toast.error("Billing portal request failed.");
+      toast.error("Billing portal request failed.", { id: toastId });
       setIsLoadingPortal(false);
     }
   };

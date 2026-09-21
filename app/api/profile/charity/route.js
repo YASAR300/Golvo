@@ -40,14 +40,9 @@ export async function GET() {
     }
 
     // Get active subscription to calculate exact dollars
-    const { data: sub } = await supabase
-      .from("subscriptions")
-      .select("plan, status")
-      .eq("user_id", user.id)
-      .eq("status", "active")
-      .maybeSingle();
-
-    const planKey = sub?.plan === PLANS.YEARLY ? PLANS.YEARLY : PLANS.MONTHLY;
+    const { getSubscriptionStatus } = await import("@/lib/subscription");
+    const subStatus = await getSubscriptionStatus(user.id);
+    const planKey = subStatus?.plan === PLANS.YEARLY ? PLANS.YEARLY : PLANS.MONTHLY;
     const planPriceCents = PLAN_DETAILS[planKey]?.priceCents || 999;
 
     return NextResponse.json({

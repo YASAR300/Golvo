@@ -44,15 +44,17 @@ export default function PricingPage() {
         if (isMounted && currentUser) {
           setUser(currentUser);
 
-          const { data: sub } = await supabase
-            .from("subscriptions")
-            .select("status, plan, current_period_end")
-            .eq("user_id", currentUser.id)
-            .eq("status", "active")
-            .maybeSingle();
-
-          if (isMounted) {
-            setSubscription(sub || null);
+          // Authoritative subscription check
+          try {
+            const statusRes = await fetch("/api/subscription/status", { cache: "no-store" });
+            if (statusRes.ok) {
+              const statusData = await statusRes.json();
+              if (isMounted && statusData.isSubscribed && statusData.subscription) {
+                setSubscription(statusData.subscription);
+              }
+            }
+          } catch (e) {
+            console.warn("Pricing status check:", e);
           }
         } else {
           // Fallback to getUser()
@@ -106,6 +108,8 @@ export default function PricingPage() {
         return;
       }
 
+      const toastId = toast.loading("Initiating secure Stripe checkout...");
+
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: {
@@ -118,20 +122,22 @@ export default function PricingPage() {
       const data = await res.json();
 
       if (data?.url) {
+        toast.success("Redirecting to Stripe...", { id: toastId });
         window.location.href = data.url;
         return;
       }
 
       if (data?.redirectUrl) {
+        toast.dismiss(toastId);
         router.push(data.redirectUrl);
         return;
       }
 
-      toast.error(data?.error || "Failed to initialize checkout session");
+      toast.error(data?.error || "Failed to initialize checkout session", { id: toastId });
       setIsLoadingCheckout(false);
       setCheckoutPlan(null);
     } catch {
-      toast.error("Checkout connection failed. Please try again.");
+      toast.error("Checkout connection failed. Please try again.", { id: toastId });
       setIsLoadingCheckout(false);
       setCheckoutPlan(null);
     }

@@ -52,12 +52,19 @@ export function Sidebar({ isOpen, onClose }) {
 
           setProfile(userProfile);
 
-          const { data: userSub } = await supabase
-            .from("subscriptions")
-            .select("status, plan")
-            .eq("user_id", currentUser.id)
-            .eq("status", "active")
-            .maybeSingle();
+          // Authoritative Subscription Check
+          let userSub = null;
+          try {
+            const statusRes = await fetch("/api/subscription/status");
+            if (statusRes.ok) {
+              const statusData = await statusRes.json();
+              if (statusData.isSubscribed && statusData.subscription) {
+                userSub = statusData.subscription;
+              }
+            }
+          } catch (e) {
+            console.warn("Sidebar status check error:", e);
+          }
 
           setSubscription(userSub);
 
@@ -89,17 +96,19 @@ export function Sidebar({ isOpen, onClose }) {
 
   const handleOpenPortal = async () => {
     setIsLoadingPortal(true);
+    const toastId = toast.loading("Opening billing portal...");
     try {
       const res = await fetch("/api/stripe/portal", { method: "POST" });
       const data = await res.json();
       if (data?.url) {
+        toast.success("Redirecting to Stripe...", { id: toastId });
         window.location.href = data.url;
       } else {
-        toast.error(data?.error || "Could not open billing portal.");
+        toast.error(data?.error || "Could not open billing portal.", { id: toastId });
         setIsLoadingPortal(false);
       }
     } catch {
-      toast.error("Billing portal error.");
+      toast.error("Billing portal error.", { id: toastId });
       setIsLoadingPortal(false);
     }
   };
