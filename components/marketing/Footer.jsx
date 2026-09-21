@@ -45,7 +45,7 @@ export function Footer() {
             </div>
             <ul className="space-y-2">
               <li><Link href="/login" className="hover:text-white transition-colors">Member Sign In</Link></li>
-              <li><Link href="/register" className="hover:text-white transition-colors">Register Account</Link></li>
+              <li><Link href="/signup" className="hover:text-white transition-colors">Register Account</Link></li>
               <li><Link href="/dashboard" className="hover:text-white transition-colors">Golfer Dashboard</Link></li>
               <li><a href="#faq" className="hover:text-white transition-colors">Support FAQ</a></li>
             </ul>

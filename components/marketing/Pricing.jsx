@@ -174,7 +174,7 @@ export function Pricing() {
                   </CardContent>
 
                   <CardFooter className="pt-6">
-                    <Link href="/register" className="w-full">
+                    <Link href="/pricing" className="w-full">
                       <Button
                         variant={plan.ctaVariant}
                         size="lg"
