@@ -40,8 +40,50 @@ Golvo connects golfers to elite performance tracking, handicap progression, and 
 │   ├── stripe/            # Stripe SDK & subscription helpers
 │   ├── utils/             # Styling & format utilities
 │   └── validators/        # Zod validation schemas
+├── supabase/
+│   └── schema.sql         # PostgreSQL schema, RLS, triggers & charity seed
 └── public/                # Static assets
 ```
+
+---
+
+## Database Setup
+
+### 1. Execute SQL Schema in Supabase
+
+1. Open your [Supabase Project Dashboard](https://app.supabase.com/).
+2. Navigate to **SQL Editor** from the left navigation panel.
+3. Click **New Query**, copy the entire contents of [`supabase/schema.sql`](supabase/schema.sql), and paste them into the editor.
+4. Click **Run** to execute the query.
+
+This script configures:
+- **8 core tables**: `profiles`, `charities`, `subscriptions`, `scores`, `donations`, `draws`, `draw_entries`, `winners`.
+- **Automatic profile trigger**: creates a profile entry whenever a user signs up through Supabase Auth.
+- **5-Score retention rule**: automatically purges older scores to keep strictly the 5 latest rounds per golfer.
+- **Row Level Security (RLS)**: locks down data with fine-grained access policies and the `is_admin()` security definer function.
+- **Storage Bucket (`winner-proofs`)**: sets up private storage and user folder isolation for score verification uploads.
+- **Seed Data**: creates 6 realistic golf charity organizations with 1 featured charity (*Youth on Course*).
+
+### 2. Promote a User to Admin
+
+By default, new sign-ups are assigned the `'subscriber'` role. To grant administrator privileges to a user:
+
+1. Have the user sign up or create an account via Supabase Auth.
+2. In the Supabase SQL Editor, run:
+
+```sql
+UPDATE public.profiles
+SET role = 'admin'
+WHERE email = 'your-admin-email@example.com';
+```
+
+3. Confirm role update:
+
+```sql
+SELECT id, email, full_name, role FROM public.profiles WHERE role = 'admin';
+```
+
+Once promoted, the user will have unrestricted access to `/admin` routes and administrative APIs.
 
 ---
 

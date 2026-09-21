@@ -209,3 +209,277 @@ DROP TRIGGER IF EXISTS trg_enforce_five_scores ON public.scores;
 CREATE TRIGGER trg_enforce_five_scores
   AFTER INSERT ON public.scores
   FOR EACH ROW EXECUTE FUNCTION public.enforce_five_scores_retention();
+
+-- ==============================================================================
+-- ROW LEVEL SECURITY (RLS) & HELPER FUNCTIONS
+-- ==============================================================================
+
+-- Admin helper function (Security Definer)
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1
+    FROM public.profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- Enable RLS on all tables
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.charities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.scores ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.donations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.draws ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.draw_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.winners ENABLE ROW LEVEL SECURITY;
+
+-- ------------------------------------------------------------------------------
+-- RLS POLICIES: PROFILES
+-- ------------------------------------------------------------------------------
+CREATE POLICY "Users can view their own profile or admins view all"
+  ON public.profiles FOR SELECT
+  TO authenticated
+  USING (auth.uid() = id OR public.is_admin());
+
+CREATE POLICY "Users can update their own profile or admins update all"
+  ON public.profiles FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = id OR public.is_admin())
+  WITH CHECK (auth.uid() = id OR public.is_admin());
+
+CREATE POLICY "Users can insert their profile or admins insert"
+  ON public.profiles FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = id OR public.is_admin());
+
+-- ------------------------------------------------------------------------------
+-- RLS POLICIES: CHARITIES
+-- ------------------------------------------------------------------------------
+CREATE POLICY "Active charities are readable by all users"
+  ON public.charities FOR SELECT
+  TO anon, authenticated
+  USING (is_active = TRUE OR public.is_admin());
+
+CREATE POLICY "Admins have full write access to charities"
+  ON public.charities FOR ALL
+  TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- ------------------------------------------------------------------------------
+-- RLS POLICIES: SUBSCRIPTIONS
+-- ------------------------------------------------------------------------------
+CREATE POLICY "Users can view their own subscriptions or admins view all"
+  ON public.subscriptions FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id OR public.is_admin());
+
+CREATE POLICY "Admins have full write access to subscriptions"
+  ON public.subscriptions FOR ALL
+  TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- ------------------------------------------------------------------------------
+-- RLS POLICIES: SCORES
+-- ------------------------------------------------------------------------------
+CREATE POLICY "Users can view their own scores or admins view all"
+  ON public.scores FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id OR public.is_admin());
+
+CREATE POLICY "Users can insert their own scores"
+  ON public.scores FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own scores"
+  ON public.scores FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own scores or admins delete"
+  ON public.scores FOR DELETE
+  TO authenticated
+  USING (auth.uid() = user_id OR public.is_admin());
+
+-- ------------------------------------------------------------------------------
+-- RLS POLICIES: DONATIONS
+-- ------------------------------------------------------------------------------
+CREATE POLICY "Users can view their own donations or admins view all"
+  ON public.donations FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id OR public.is_admin());
+
+CREATE POLICY "Admins have full write access to donations"
+  ON public.donations FOR ALL
+  TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- ------------------------------------------------------------------------------
+-- RLS POLICIES: DRAWS
+-- ------------------------------------------------------------------------------
+CREATE POLICY "Published draws are readable by everyone"
+  ON public.draws FOR SELECT
+  TO anon, authenticated
+  USING (status = 'published' OR public.is_admin());
+
+CREATE POLICY "Admins have full write access to draws"
+  ON public.draws FOR ALL
+  TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- ------------------------------------------------------------------------------
+-- RLS POLICIES: DRAW ENTRIES
+-- ------------------------------------------------------------------------------
+CREATE POLICY "Users can view their own draw entries or admins view all"
+  ON public.draw_entries FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id OR public.is_admin());
+
+CREATE POLICY "Users can insert their own draw entries"
+  ON public.draw_entries FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id OR public.is_admin());
+
+CREATE POLICY "Admins have full write access to draw entries"
+  ON public.draw_entries FOR ALL
+  TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- ------------------------------------------------------------------------------
+-- RLS POLICIES: WINNERS
+-- ------------------------------------------------------------------------------
+CREATE POLICY "Approved winners are readable by all or users see own winnings"
+  ON public.winners FOR SELECT
+  TO anon, authenticated
+  USING (verification_status = 'approved' OR auth.uid() = user_id OR public.is_admin());
+
+CREATE POLICY "Winners can update their own proof submission"
+  ON public.winners FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = user_id OR public.is_admin())
+  WITH CHECK (auth.uid() = user_id OR public.is_admin());
+
+CREATE POLICY "Admins have full write access to winners"
+  ON public.winners FOR ALL
+  TO authenticated
+  USING (public.is_admin())
+  WITH CHECK (public.is_admin());
+
+-- ==============================================================================
+-- STORAGE BUCKET: winner-proofs
+-- ==============================================================================
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'winner-proofs',
+  'winner-proofs',
+  FALSE,
+  10485760, -- 10MB
+  ARRAY['image/png', 'image/jpeg', 'image/webp', 'application/pdf']
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage RLS: Users can upload their own winner proof into their user folder
+CREATE POLICY "Users can upload their own winner proof"
+  ON storage.objects FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    bucket_id = 'winner-proofs' AND
+    (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Storage RLS: Users can view their own proof or admins can view all
+CREATE POLICY "Users can view their own winner proof or admins view all"
+  ON storage.objects FOR SELECT
+  TO authenticated
+  USING (
+    bucket_id = 'winner-proofs' AND
+    ((storage.foldername(name))[1] = auth.uid()::text OR public.is_admin())
+  );
+
+-- Storage RLS: Admins have full access to manage winner proofs
+CREATE POLICY "Admins have full access to winner proofs"
+  ON storage.objects FOR ALL
+  TO authenticated
+  USING (
+    bucket_id = 'winner-proofs' AND public.is_admin()
+  )
+  WITH CHECK (
+    bucket_id = 'winner-proofs' AND public.is_admin()
+  );
+
+-- ==============================================================================
+-- SAMPLE SEED DATA: 6 CHARITIES (1 FEATURED)
+-- ==============================================================================
+INSERT INTO public.charities (name, slug, description, image_url, is_featured, is_active, events)
+VALUES
+  (
+    'Youth on Course',
+    'youth-on-course',
+    'Subsidizing rounds of golf for young players nationwide for $5 or less, removing socio-economic barriers to play.',
+    'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=800&q=80',
+    TRUE,
+    TRUE,
+    '[{"name": "National Junior Championship", "date": "2026-10-15", "location": "Pebble Beach"}]'::jsonb
+  ),
+  (
+    'First Tee Foundation',
+    'first-tee',
+    'Empowering kids and teens through educational programs that build character and instill life-enhancing values through the game of golf.',
+    'https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&w=800&q=80',
+    FALSE,
+    TRUE,
+    '[{"name": "Autumn Leadership Summit", "date": "2026-11-02", "location": "Atlanta, GA"}]'::jsonb
+  ),
+  (
+    'Adaptive Golf Association',
+    'adaptive-golf-association',
+    'Providing customized instruction, adaptive equipment, and competitive tournaments for individuals with physical and cognitive challenges.',
+    'https://images.unsplash.com/photo-1592919505780-303950717480?auto=format&fit=crop&w=800&q=80',
+    FALSE,
+    TRUE,
+    '[{"name": "Paralympic Hope Invitational", "date": "2026-12-05", "location": "Scottsdale, AZ"}]'::jsonb
+  ),
+  (
+    'PGA HOPE',
+    'pga-hope',
+    'Helping Our Patriots Everywhere: introducing golf to active duty military and military veterans to enhance physical, mental, and emotional wellbeing.',
+    'https://images.unsplash.com/photo-1593111774240-d529f12cf4bb?auto=format&fit=crop&w=800&q=80',
+    FALSE,
+    TRUE,
+    '[{"name": "Veterans Day Cup", "date": "2026-11-11", "location": "San Diego, CA"}]'::jsonb
+  ),
+  (
+    'Women in Golf Foundation',
+    'women-in-golf-foundation',
+    'Championing collegiate women golfers and creating pathways to leadership in the professional golf industry through development initiatives.',
+    'https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=800&q=80',
+    FALSE,
+    TRUE,
+    '[{"name": "Collegiate Leadership Invitational", "date": "2027-01-20", "location": "Pinehurst, NC"}]'::jsonb
+  ),
+  (
+    'Save the Greens Trust',
+    'save-the-greens',
+    'Restoring natural wetland habitats, promoting zero-chemical turf care, and fostering pollinator sanctuaries across public golf facilities.',
+    'https://images.unsplash.com/photo-1500932334442-8761ee4810a7?auto=format&fit=crop&w=800&q=80',
+    FALSE,
+    TRUE,
+    '[{"name": "Eco-Fairway Stewardship Forum", "date": "2027-02-14", "location": "Orlando, FL"}]'::jsonb
+  )
+ON CONFLICT (slug) DO UPDATE
+SET
+  name = EXCLUDED.name,
+  description = EXCLUDED.description,
+  image_url = EXCLUDED.image_url,
+  is_featured = EXCLUDED.is_featured,
+  is_active = EXCLUDED.is_active,
+  events = EXCLUDED.events;
