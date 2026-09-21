@@ -55,6 +55,24 @@ export default function DashboardPage() {
 
           setProfile(userProfile);
 
+          // Auto-sync checkout session if redirected from Stripe
+          if (typeof window !== "undefined") {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sessionId = urlParams.get("session_id");
+            if (sessionId) {
+              try {
+                await fetch("/api/stripe/sync-session", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ sessionId }),
+                });
+                toast.success("Subscription activated successfully!", { id: "sub-success" });
+              } catch (e) {
+                console.warn("Auto-sync notice:", e);
+              }
+            }
+          }
+
           // 3. Load active subscription
           const { data: userSub } = await supabase
             .from("subscriptions")
