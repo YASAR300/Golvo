@@ -137,6 +137,12 @@ export function Sidebar({ isOpen, onClose }) {
           badge: "40% Pot",
         },
         {
+          name: "Prize Winnings",
+          href: "/winnings",
+          icon: Trophy,
+          current: pathname === "/winnings",
+        },
+        {
           name: "Beneficiary Charity",
           href: "/dashboard#charity",
           icon: Heart,
