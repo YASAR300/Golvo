@@ -104,10 +104,11 @@ export async function POST(request) {
       }
 
       // ------------------------------------------------------------------------
-      // EVENT: invoice.paid
+      // EVENT: invoice.paid & invoice.payment_succeeded
       // Handles charity giveback (10-100%) and prize pool contribution (40%)
       // ------------------------------------------------------------------------
-      case "invoice.paid": {
+      case "invoice.paid":
+      case "invoice.payment_succeeded": {
         const invoice = data.object;
         await handleInvoicePaid(invoice);
         break;
