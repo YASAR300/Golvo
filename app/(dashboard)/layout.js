@@ -28,8 +28,7 @@ export default function DashboardLayout({ children }) {
           </button>
 
           <Link href="/" className="flex items-center gap-2">
-            <Logo size={26} />
-            <span className="text-xs font-bold tracking-tight text-[#F7F8F8]">Golvo</span>
+            <Logo size={24} textClassName="text-xs font-bold" />
           </Link>
 
           <div className="w-8" />

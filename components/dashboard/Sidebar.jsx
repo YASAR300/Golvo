@@ -183,16 +183,11 @@ export function Sidebar({ isOpen, onClose }) {
     <div className="flex flex-col h-full bg-[#08090A] border-r border-white/[0.08] select-none">
       {/* Workspace Header */}
       <div className="p-4 border-b border-white/[0.08] flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <Logo size={28} />
-          <div className="flex flex-col">
-            <span className="text-sm font-bold tracking-tight text-[#F7F8F8] flex items-center gap-1.5">
-              Golvo
-              <span className="text-[10px] uppercase font-semibold tracking-wider px-1.5 py-0.5 rounded bg-white/[0.06] text-[#8A8F98]">
-                Console
-              </span>
-            </span>
-          </div>
+        <Link href="/" className="flex items-center gap-2 group">
+          <Logo size={24} textClassName="text-sm font-bold" />
+          <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-white/[0.06] border border-white/10 text-[#8A8F98]">
+            Console
+          </span>
         </Link>
 
         {/* Mobile close button */}

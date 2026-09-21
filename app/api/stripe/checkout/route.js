@@ -13,10 +13,23 @@ export async function POST(request) {
   try {
     // 1. Authenticate user
     const supabase = await createClient();
-    const {
+    let {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
+
+    // Fallback: Authenticate via Bearer token in case cookies are blocked/cross-domain
+    if (!user) {
+      const authHeader = request.headers.get("authorization");
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        const token = authHeader.split(" ")[1];
+        const { data: tokenData } = await supabase.auth.getUser(token);
+        if (tokenData?.user) {
+          user = tokenData.user;
+          authError = null;
+        }
+      }
+    }
 
     if (authError || !user) {
       return NextResponse.json(

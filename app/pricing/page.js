@@ -34,16 +34,16 @@ export default function PricingPage() {
   const [isLoadingPortal, setIsLoadingPortal] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
     async function loadUserAndSubscription() {
       try {
         const supabase = createClient();
-        const {
-          data: { user: currentUser },
-        } = await supabase.auth.getUser();
+        const { data: sessionData } = await supabase.auth.getSession();
+        const currentUser = sessionData?.session?.user;
 
-        setUser(currentUser);
+        if (isMounted && currentUser) {
+          setUser(currentUser);
 
-        if (currentUser) {
           const { data: sub } = await supabase
             .from("subscriptions")
             .select("status, plan, current_period_end")
@@ -51,7 +51,15 @@ export default function PricingPage() {
             .eq("status", "active")
             .maybeSingle();
 
-          setSubscription(sub || null);
+          if (isMounted) {
+            setSubscription(sub || null);
+          }
+        } else {
+          // Fallback to getUser()
+          const { data: userData } = await supabase.auth.getUser();
+          if (isMounted && userData?.user) {
+            setUser(userData.user);
+          }
         }
       } catch (err) {
         console.warn("Could not load subscription details:", err?.message);
@@ -59,38 +67,69 @@ export default function PricingPage() {
     }
 
     loadUserAndSubscription();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleCheckout = async (plan) => {
-    if (!user) {
-      toast("Please sign in or create an account first", { icon: "🔒" });
-      router.push(`/login?redirect=/pricing`);
-      return;
-    }
-
     setIsLoadingCheckout(true);
     setCheckoutPlan(plan);
+
     try {
+      const supabase = createClient();
+      let activeUser = user;
+      let token = null;
+
+      // Check fresh session
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session) {
+        activeUser = sessionData.session.user;
+        token = sessionData.session.access_token;
+        setUser(activeUser);
+      }
+
+      // Fallback to getUser() if session was not cached
+      if (!activeUser) {
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData?.user) {
+          activeUser = userData.user;
+          setUser(activeUser);
+        }
+      }
+
+      if (!activeUser) {
+        setIsLoadingCheckout(false);
+        setCheckoutPlan(null);
+        toast("Please sign in or create an account first", { icon: "🔒" });
+        router.push(`/login?redirect=/pricing`);
+        return;
+      }
+
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ plan }),
       });
 
       const data = await res.json();
+
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
+      }
 
       if (data?.redirectUrl) {
         router.push(data.redirectUrl);
         return;
       }
 
-      if (data?.url) {
-        window.location.href = data.url;
-      } else {
-        toast.error(data?.error || "Failed to initialize checkout session");
-        setIsLoadingCheckout(false);
-        setCheckoutPlan(null);
-      }
+      toast.error(data?.error || "Failed to initialize checkout session");
+      setIsLoadingCheckout(false);
+      setCheckoutPlan(null);
     } catch {
       toast.error("Checkout connection failed. Please try again.");
       setIsLoadingCheckout(false);
