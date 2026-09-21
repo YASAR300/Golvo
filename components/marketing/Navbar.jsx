@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Logo } from "@/components/ui/Logo";
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -23,20 +24,9 @@ export function Navbar() {
         {/* Brand Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2] rounded-md px-1"
+          className="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-md px-1"
         >
-          <div className="relative w-9 h-9 rounded-[10px] overflow-hidden border border-white/10 shadow-[0_0_15px_rgba(94,106,210,0.4)] group-hover:scale-105 transition-transform duration-200 bg-[#0F1011]">
-            <Image
-              src="/logo.png"
-              alt="Golvo Logo"
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-          <span className="font-bold text-lg tracking-tight text-[#F7F8F8] group-hover:text-white transition-colors">
-            Golvo
-          </span>
+          <Logo size={32} />
         </Link>
 
         {/* Desktop Navigation Links */}

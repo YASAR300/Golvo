@@ -68,31 +68,33 @@ export function Hero() {
           </p>
         </motion.div>
 
-        {/* CTA Buttons with Hand-Drawn Annotation */}
+        {/* CTA Buttons with Hand-Drawn Annotation tightly anchored */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="relative flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
         >
-          {/* Subtle Caveat annotation with CurlyArrow (hidden on mobile, non-overlapping) */}
-          <div className="hidden md:flex absolute -left-28 -top-8 items-center gap-1.5 pointer-events-none opacity-85">
-            <span className="font-caveat text-base text-[#8A95FF] rotate-[-6deg]">
-              5 numbers, 1 chance
-            </span>
-            <CurlyArrow size={50} height={38} className="text-[#5E6AD2] translate-y-2" />
-          </div>
+          <div className="relative inline-flex items-center">
+            <a href="#pricing">
+              <Button
+                variant="primary"
+                size="lg"
+                rightIcon={<ArrowRight className="w-4 h-4" />}
+                className="h-12 px-7 text-sm font-semibold shadow-[0_0_24px_rgba(94,106,210,0.35)]"
+              >
+                Subscribe & Enter Draw
+              </Button>
+            </a>
 
-          <a href="#pricing">
-            <Button
-              variant="primary"
-              size="lg"
-              rightIcon={<ArrowRight className="w-4 h-4" />}
-              className="h-12 px-6 text-sm font-semibold shadow-[0_0_24px_rgba(94,106,210,0.35)]"
-            >
-              Subscribe & Enter Draw
-            </Button>
-          </a>
+            {/* Hand-drawn note directly anchored right next to button */}
+            <div className="hidden md:flex absolute -top-8 -right-36 items-center gap-1.5 pointer-events-none select-none">
+              <CurlyArrow size={38} height={28} className="text-[#8A95FF] -rotate-12 translate-y-1" />
+              <span className="font-caveat text-sm text-[#8A95FF] rotate-[3deg] whitespace-nowrap">
+                5 numbers, 1 chance
+              </span>
+            </div>
+          </div>
 
           <a href="#how-it-works">
             <Button variant="secondary" size="lg" className="h-12 px-6 text-sm">

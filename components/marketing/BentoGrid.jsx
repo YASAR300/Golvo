@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { CreditCard, Target, Shuffle, HeartHandshake, ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
+import { SparkleStar } from "@/components/doodles";
 
 export function BentoGrid() {
   const steps = [
@@ -86,7 +87,13 @@ export function BentoGrid() {
 
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold text-[#F7F8F8] flex items-center gap-2">
-                  {item.title}
+                  <span>{item.title}</span>
+                  {item.step === "02" && (
+                    <span className="hidden sm:inline-flex items-center gap-1 font-caveat text-sm text-[#4CC38A] font-normal -rotate-1">
+                      <SparkleStar size={12} className="text-[#4CC38A]" />
+                      latest 5 only
+                    </span>
+                  )}
                 </h3>
                 <p className="text-xs sm:text-sm text-[#8A8F98] leading-relaxed">
                   {item.description}

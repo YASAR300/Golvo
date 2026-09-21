@@ -7,7 +7,7 @@ import { Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/Card";
-import { DoodleCheck } from "@/components/doodles";
+import { DoodleCheck, SparkleStar } from "@/components/doodles";
 
 export function Pricing() {
   const [isYearly, setIsYearly] = useState(true);
@@ -97,6 +97,10 @@ export function Pricing() {
                 Save 20%
               </span>
             </button>
+            <span className="hidden md:inline-flex items-center gap-1 font-caveat text-sm text-[#4CC38A] ml-2 -rotate-1 pointer-events-none select-none">
+              <SparkleStar size={12} className="text-[#4CC38A]" />
+              2 months free
+            </span>
           </div>
         </div>
 

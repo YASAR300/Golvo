@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Award, Zap, Layers, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { ScribbleCircle } from "@/components/doodles";
+import { ScribbleCircle, SparkleStar, CurlyArrow } from "@/components/doodles";
 
 export function DrawExplainer() {
   const tiers = [
@@ -95,6 +95,12 @@ export function DrawExplainer() {
                       {tier.share}
                     </span>
                     <span className="text-xs text-[#8A8F98]">of Net Prize Pool</span>
+                    {tier.rollover && (
+                      <span className="hidden sm:inline-flex items-center gap-1 font-caveat text-sm text-[#F2C94C] ml-auto -rotate-1">
+                        <SparkleStar size={12} className="text-[#F2C94C]" />
+                        jackpot rolls over!
+                      </span>
+                    )}
                   </div>
 
                   <p className="text-xs text-[#8A8F98] leading-relaxed">

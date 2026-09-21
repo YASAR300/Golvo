@@ -26,3 +26,4 @@ export {
 } from "./Table";
 export { EmptyState } from "./EmptyState";
 export { Spinner } from "./Spinner";
+export { Logo } from "./Logo";

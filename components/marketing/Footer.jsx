@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Heart } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 
 export function Footer() {
   return (
@@ -12,16 +13,8 @@ export function Footer() {
           
           {/* Brand Col */}
           <div className="col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-2.5 text-white font-bold text-base group">
-              <div className="relative w-8 h-8 rounded-[8px] overflow-hidden border border-white/10 shadow-[0_0_12px_rgba(94,106,210,0.3)] bg-[#0F1011]">
-                <Image
-                  src="/logo.png"
-                  alt="Golvo Logo"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <span className="group-hover:text-white transition-colors">Golvo</span>
+            <Link href="/" className="inline-block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded">
+              <Logo size={28} />
             </Link>
             <p className="text-xs text-[#8A8F98] max-w-sm leading-relaxed">
               Golf performance tracking meets transparent charity prize draws. Play your round, elevate your game, and empower youth and veteran foundations.
