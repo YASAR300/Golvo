@@ -132,18 +132,13 @@ export default function DashboardPage() {
         }}
       />
 
-      {/* Dashboard Navbar */}
-      <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-[#08090A]/85 backdrop-blur-xl transition-all">
+      {/* Dashboard Top App-Bar */}
+      <header className="sticky top-0 z-30 w-full border-b border-white/[0.08] bg-[#08090A]/85 backdrop-blur-xl transition-all">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 rounded-md">
-              <Logo size={32} />
-            </Link>
-
-            <div className="hidden sm:flex items-center gap-2 text-xs text-[#8A8F98]">
-              <span className="text-white/20">•</span>
-              <span>Golfer Console</span>
-            </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-semibold text-white">Overview</span>
+            <span className="text-white/20 hidden sm:inline">•</span>
+            <span className="text-xs text-[#8A8F98] hidden sm:inline">Golfer Console &amp; Monthly Draw</span>
           </div>
 
           <div className="flex items-center gap-3">
@@ -220,14 +215,14 @@ export default function DashboardPage() {
         {/* 2-Column Grid: Score Manager (Left) & Draw/Charity (Right) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Main Left Column (7 cols): Rolling 5-Score Stableford Manager */}
-          <div className="lg:col-span-7 space-y-6">
+          <div id="scores" className="lg:col-span-7 space-y-6 scroll-mt-20">
             <ScoreManager />
           </div>
 
           {/* Right Column (5 cols): Active Draw & Charity Impact */}
           <div className="lg:col-span-5 space-y-6">
             {/* Monthly Charity Draw Ticket Card */}
-            <Card className="bg-[#0F1011] border-white/[0.08] relative overflow-hidden shadow-xl">
+            <Card id="draw" className="bg-[#0F1011] border-white/[0.08] relative overflow-hidden shadow-xl scroll-mt-20">
               <div className="absolute top-0 right-0 w-48 h-28 bg-[#5E6AD2]/10 rounded-full blur-2xl pointer-events-none" />
 
               <CardHeader className="p-6 border-b border-white/[0.06] space-y-2">
@@ -309,7 +304,7 @@ export default function DashboardPage() {
             </Card>
 
             {/* Beneficiary Charity Impact Card */}
-            <Card className="bg-[#0F1011] border-white/[0.08] relative overflow-hidden shadow-xl">
+            <Card id="charity" className="bg-[#0F1011] border-white/[0.08] relative overflow-hidden shadow-xl scroll-mt-20">
               <CardHeader className="p-6 border-b border-white/[0.06] space-y-1">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
