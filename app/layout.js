@@ -18,9 +18,12 @@ export const metadata = {
   title: "Golvo — Golf Performance & Charity Draws",
   description: "Track your golf handicap, elevate your game, and enter exclusive charity prize draws.",
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/logo.png", type: "image/png" },
+    ],
+    shortcut: "/icon.png",
+    apple: "/apple-icon.png",
   },
 };
 
