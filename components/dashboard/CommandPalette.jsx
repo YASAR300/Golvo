@@ -16,12 +16,18 @@ import {
   X,
 } from "lucide-react";
 
-export function CommandPalette({ isOpen, onClose, onOpenCharityModal, onOpenBillingPortal }) {
+export function CommandPalette({
+  isOpen,
+  onClose,
+  onOpenCharityModal,
+  onOpenBillingPortal,
+  customCommands,
+}) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const commands = [
+  const defaultCommands = [
     {
       group: "Navigation",
       items: [
@@ -77,6 +83,8 @@ export function CommandPalette({ isOpen, onClose, onOpenCharityModal, onOpenBill
       ],
     },
   ];
+
+  const commands = customCommands || defaultCommands;
 
   // Flatten for keyboard navigation
   const filteredCommands = commands
