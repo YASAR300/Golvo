@@ -125,9 +125,54 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
+## Stripe Payments & Subscription Setup
+
+### 1. Create Test Prices
+
+Run the automated price initialization script:
+
+```bash
+node scripts/setup-stripe.js
+```
+
+This creates the "Golvo Golf Subscription" product in your Stripe account with:
+- **Monthly Plan**: $9.99 / month (`STRIPE_PRICE_MONTHLY`)
+- **Annual Plan**: $95.88 / year (`STRIPE_PRICE_YEARLY`, 20% discount)
+
+The script automatically populates `.env.local` with your generated price IDs.
+
+### 2. Local Webhook Forwarding
+
+Install the [Stripe CLI](https://docs.stripe.com/stripe-cli) and forward events to your local Next.js server:
+
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+The CLI will print your webhook signing secret:
+`> Ready! Your webhook signing secret is whsec_...`
+
+Add this secret to your `.env.local`:
+
+```bash
+STRIPE_WEBHOOK_SECRET=whsec_your_test_signing_secret
+```
+
+### 3. Stripe Test Card Numbers
+
+Use the standard Stripe test card for subscribing:
+- **Card Number**: `4242 4242 4242 4242`
+- **MM/YY**: Any date in the future (e.g., `12/28`)
+- **CVC**: Any 3 digits (e.g., `123`)
+- **ZIP**: Any 5 digits (e.g., `90210`)
+
+---
+
 ## Scripts
 
 - `npm run dev`: Launch local development server
 - `npm run build`: Compile production build
 - `npm run start`: Start production server
 - `npm run lint`: Run ESLint checks
+- `node scripts/setup-stripe.js`: Initialize Stripe recurring products and prices
+
