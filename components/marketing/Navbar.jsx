@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Trophy, Menu, X, ArrowRight } from "lucide-react";
+import Image from "next/image";
+import { Menu, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 export function Navbar() {
@@ -18,22 +19,28 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-[#08090A]/85 backdrop-blur-xl transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 h-16 flex items-center justify-between">
         {/* Brand Logo */}
         <Link
           href="/"
           className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2] rounded-md px-1"
         >
-          <div className="w-8 h-8 rounded-[8px] bg-gradient-to-br from-[#5E6AD2] to-[#3B4699] flex items-center justify-center border border-white/10 shadow-[0_0_15px_rgba(94,106,210,0.4)] group-hover:scale-105 transition-transform duration-200">
-            <Trophy className="w-4 h-4 text-white" />
+          <div className="relative w-9 h-9 rounded-[10px] overflow-hidden border border-white/10 shadow-[0_0_15px_rgba(94,106,210,0.4)] group-hover:scale-105 transition-transform duration-200 bg-[#0F1011]">
+            <Image
+              src="/logo.png"
+              alt="Golvo Logo"
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
-          <span className="font-bold text-lg tracking-tight text-[#F7F8F8]">
+          <span className="font-bold text-lg tracking-tight text-[#F7F8F8] group-hover:text-white transition-colors">
             Golvo
           </span>
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-7 text-xs font-medium text-[#8A8F98]">
+        <nav className="hidden md:flex items-center gap-8 text-xs font-medium text-[#8A8F98]">
           {navLinks.map((link) => (
             <a
               key={link.label}

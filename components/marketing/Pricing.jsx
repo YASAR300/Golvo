@@ -56,7 +56,7 @@ export function Pricing() {
 
   return (
     <section id="pricing" className="py-20 md:py-28 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 space-y-12">
         
         {/* Header & Billing Period Switch */}
         <div className="text-center max-w-2xl mx-auto space-y-4">
@@ -101,7 +101,7 @@ export function Pricing() {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
           {plans.map((plan, idx) => {
             const price = isYearly
               ? Math.round(plan.yearlyPrice / 12)

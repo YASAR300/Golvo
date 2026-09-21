@@ -33,7 +33,7 @@ export function FAQ() {
 
   return (
     <section id="faq" className="py-20 md:py-28 relative bg-[#08090A]">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-10 space-y-12">
         
         {/* Header */}
         <div className="text-center space-y-3">

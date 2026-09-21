@@ -1,21 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { Trophy, Heart } from "lucide-react";
+import Image from "next/image";
+import { Heart } from "lucide-react";
 
 export function Footer() {
   return (
     <footer className="border-t border-white/[0.08] bg-[#08090A] text-[#8A8F98] text-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 py-12 md:py-16">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 pb-12 border-b border-white/[0.06]">
           
           {/* Brand Col */}
           <div className="col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-2 text-white font-bold text-base">
-              <div className="w-6 h-6 rounded bg-[#5E6AD2] flex items-center justify-center">
-                <Trophy className="w-3.5 h-3.5 text-white" />
+            <Link href="/" className="flex items-center gap-2.5 text-white font-bold text-base group">
+              <div className="relative w-8 h-8 rounded-[8px] overflow-hidden border border-white/10 shadow-[0_0_12px_rgba(94,106,210,0.3)] bg-[#0F1011]">
+                <Image
+                  src="/logo.png"
+                  alt="Golvo Logo"
+                  fill
+                  className="object-cover"
+                />
               </div>
-              <span>Golvo</span>
+              <span className="group-hover:text-white transition-colors">Golvo</span>
             </Link>
             <p className="text-xs text-[#8A8F98] max-w-sm leading-relaxed">
               Golf performance tracking meets transparent charity prize draws. Play your round, elevate your game, and empower youth and veteran foundations.

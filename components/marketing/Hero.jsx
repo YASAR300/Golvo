@@ -26,7 +26,7 @@ export function Hero() {
 
   return (
     <section className="relative pt-12 pb-20 md:pt-20 md:pb-32 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-8">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 text-center space-y-8">
         
         {/* Top Eyebrow Tag */}
         <motion.div
@@ -106,7 +106,7 @@ export function Hero() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.35 }}
-          className="relative max-w-4xl mx-auto pt-8 sm:pt-12"
+          className="relative max-w-5xl mx-auto pt-8 sm:pt-12"
         >
           {/* Subtle Ambient Radial Glow Behind Card */}
           <div

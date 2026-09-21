@@ -17,6 +17,11 @@ const caveat = Caveat({
 export const metadata = {
   title: "Golvo — Golf Performance & Charity Draws",
   description: "Track your golf handicap, elevate your game, and enter exclusive charity prize draws.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({ children }) {

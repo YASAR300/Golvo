@@ -88,7 +88,7 @@ export function CharitySpotlight() {
 
   return (
     <section id="charities" className="py-20 md:py-28 relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 space-y-12">
         
         {/* Section Title with DoodleHeart */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
