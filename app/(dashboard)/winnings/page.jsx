@@ -64,6 +64,11 @@ export default function WinningsPage() {
   const handleFileChange = (winnerId, e) => {
     const file = e.target.files?.[0];
     if (file) {
+      const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
+      if (!allowedTypes.includes(file.type)) {
+        toast.error("Invalid file type. Please upload a PNG, JPG, or WEBP image.");
+        return;
+      }
       if (file.size > 5 * 1024 * 1024) {
         toast.error("File size exceeds 5MB limit");
         return;

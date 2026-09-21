@@ -76,14 +76,15 @@ export async function PATCH(request) {
     const body = await request.json().catch(() => ({}));
     const { charityId, charityPercent } = body;
 
-    // Validate charityPercent
-    const percent = Math.floor(Number(charityPercent));
-    if (isNaN(percent) || percent < 10 || percent > 100) {
+    const { charityPercentSchema } = await import("@/lib/validators/charity");
+    const percentParsed = charityPercentSchema.safeParse(Number(charityPercent));
+    if (!percentParsed.success) {
       return NextResponse.json(
         { error: "Charity contribution must be between 10% and 100%" },
         { status: 400 }
       );
     }
+    const percent = percentParsed.data;
 
     // Validate charityId exists if supplied
     if (charityId) {

@@ -395,7 +395,7 @@ export function ScoreManager() {
           <form onSubmit={handleAddScore} className="flex flex-col sm:flex-row items-end gap-3.5">
             {/* Score Stepper Input */}
             <div className="w-full sm:w-48 space-y-1.5">
-              <label className="block text-[11px] font-medium text-[#8A8F98]">
+              <label htmlFor="score-input" className="block text-[11px] font-medium text-[#8A8F98]">
                 Points (1–45)
               </label>
               <div className="flex items-center rounded-[6px] bg-[#141516] border border-white/10 overflow-hidden focus-within:border-[#5E6AD2]">
@@ -408,6 +408,7 @@ export function ScoreManager() {
                   <Minus className="w-3.5 h-3.5" />
                 </button>
                 <input
+                  id="score-input"
                   type="number"
                   min="1"
                   max="45"
@@ -429,11 +430,12 @@ export function ScoreManager() {
 
             {/* Date Input */}
             <div className="w-full sm:flex-1 space-y-1.5">
-              <label className="block text-[11px] font-medium text-[#8A8F98]">
+              <label htmlFor="played-on-input" className="block text-[11px] font-medium text-[#8A8F98]">
                 Played On
               </label>
               <div className="relative">
                 <input
+                  id="played-on-input"
                   type="date"
                   max={today}
                   value={inputDate}

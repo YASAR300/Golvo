@@ -77,6 +77,7 @@ export default function PricingPage() {
   const handleCheckout = async (plan) => {
     setIsLoadingCheckout(true);
     setCheckoutPlan(plan);
+    let toastId = null;
 
     try {
       const supabase = createClient();
@@ -108,7 +109,7 @@ export default function PricingPage() {
         return;
       }
 
-      const toastId = toast.loading("Initiating secure Stripe checkout...");
+      toastId = toast.loading("Initiating secure Stripe checkout...");
 
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
@@ -128,16 +129,16 @@ export default function PricingPage() {
       }
 
       if (data?.redirectUrl) {
-        toast.dismiss(toastId);
+        if (toastId) toast.dismiss(toastId);
         router.push(data.redirectUrl);
         return;
       }
 
-      toast.error(data?.error || "Failed to initialize checkout session", { id: toastId });
+      toast.error(data?.error || "Failed to initialize checkout session", toastId ? { id: toastId } : undefined);
       setIsLoadingCheckout(false);
       setCheckoutPlan(null);
     } catch {
-      toast.error("Checkout connection failed. Please try again.", { id: toastId });
+      toast.error("Checkout connection failed. Please try again.", toastId ? { id: toastId } : undefined);
       setIsLoadingCheckout(false);
       setCheckoutPlan(null);
     }

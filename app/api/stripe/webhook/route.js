@@ -234,21 +234,34 @@ async function handleInvoicePaid(invoice) {
   const charityPercent = profile.charity_percent || 10;
   const donationCents = Math.round(amountPaidCents * (charityPercent / 100));
 
+  const paymentId =
+    typeof invoice.payment_intent === "string"
+      ? invoice.payment_intent
+      : invoice.id;
+
   if (profile.charity_id && donationCents > 0) {
     try {
-      await adminClient.from("donations").insert({
-        user_id: profile.id,
-        charity_id: profile.charity_id,
-        amount_cents: donationCents,
-        type: "subscription_share",
-        stripe_payment_id:
-          typeof invoice.payment_intent === "string"
-            ? invoice.payment_intent
-            : invoice.id,
-      });
-      console.log(
-        `Recorded donation of $${(donationCents / 100).toFixed(2)} to charity ${profile.charity_id}`
-      );
+      // Idempotency check: avoid duplicate donations if webhook event is redelivered
+      const { data: existingDonation } = await adminClient
+        .from("donations")
+        .select("id")
+        .eq("stripe_payment_id", paymentId)
+        .maybeSingle();
+
+      if (!existingDonation) {
+        await adminClient.from("donations").insert({
+          user_id: profile.id,
+          charity_id: profile.charity_id,
+          amount_cents: donationCents,
+          type: "subscription_share",
+          stripe_payment_id: paymentId,
+        });
+        console.log(
+          `Recorded donation of $${(donationCents / 100).toFixed(2)} to charity ${profile.charity_id}`
+        );
+      } else {
+        console.log(`Donation for payment ${paymentId} already exists. Skipping.`);
+      }
     } catch (donationErr) {
       console.error("Failed to record charity donation:", donationErr);
     }
