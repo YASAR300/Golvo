@@ -6,6 +6,10 @@ export async function GET(request) {
   const code = requestUrl.searchParams.get("code");
   const next = requestUrl.searchParams.get("next");
 
+  const isLocal = requestUrl.hostname === "localhost" || requestUrl.hostname === "127.0.0.1";
+  const canonicalUrl = process.env.APP_URL || "https://golvo.vercel.app";
+  const origin = !isLocal ? canonicalUrl.replace(/\/$/, "") : requestUrl.origin;
+
   if (code) {
     const supabase = await createClient();
     const { error, data } = await supabase.auth.exchangeCodeForSession(code);
@@ -13,7 +17,7 @@ export async function GET(request) {
     if (!error && data?.user) {
       // If a specific next destination was requested (e.g. /reset-password)
       if (next) {
-        return NextResponse.redirect(new URL(next, requestUrl.origin));
+        return NextResponse.redirect(new URL(next, origin));
       }
 
       // Check user profile for charity selection and role
@@ -26,22 +30,22 @@ export async function GET(request) {
 
         // If user has not completed profile (no charity assigned) and profile exists
         if (!profileErr && profile && !profile.charity_id) {
-          return NextResponse.redirect(new URL("/complete-profile", requestUrl.origin));
+          return NextResponse.redirect(new URL("/complete-profile", origin));
         }
 
         if (profile?.role === "admin") {
-          return NextResponse.redirect(new URL("/admin", requestUrl.origin));
+          return NextResponse.redirect(new URL("/admin", origin));
         }
       } catch (e) {
         console.warn("Callback profile query error:", e);
       }
 
-      return NextResponse.redirect(new URL("/dashboard", requestUrl.origin));
+      return NextResponse.redirect(new URL("/dashboard", origin));
     }
   }
 
   // If code exchange failed or expired
-  const errorUrl = new URL("/login", requestUrl.origin);
+  const errorUrl = new URL("/login", origin);
   errorUrl.searchParams.set("error", "auth_callback_failed");
   return NextResponse.redirect(errorUrl);
 }

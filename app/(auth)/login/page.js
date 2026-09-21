@@ -10,6 +10,7 @@ import { Logo } from "@/components/ui/Logo";
 import { GoogleIcon } from "@/components/ui/GoogleIcon";
 import { BackStarButton } from "@/components/ui/BackStarButton";
 import { createClient } from "@/lib/supabase/client";
+import { getAppUrl } from "@/lib/utils/url";
 import { loginAction } from "../actions";
 
 export default function LoginPage() {
@@ -25,11 +26,11 @@ export default function LoginPage() {
     setErrorMessage("");
     try {
       const supabase = createClient();
-      const origin = window.location.origin;
+      const appUrl = getAppUrl();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${origin}/auth/callback`,
+          redirectTo: `${appUrl}/auth/callback`,
           queryParams: {
             access_type: "offline",
             prompt: "consent",
