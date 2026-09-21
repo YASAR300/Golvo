@@ -76,6 +76,15 @@ export function Sidebar({ isOpen, onClose }) {
     }
 
     loadUserData();
+
+    const handleSubUpdated = () => {
+      loadUserData();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("golvo:subscription_updated", handleSubUpdated);
+      return () => window.removeEventListener("golvo:subscription_updated", handleSubUpdated);
+    }
   }, []);
 
   const handleOpenPortal = async () => {
@@ -153,9 +162,9 @@ export function Sidebar({ isOpen, onClose }) {
         },
         {
           name: "Settings / Billing",
-          href: "/pricing",
+          href: "/dashboard/settings",
           icon: CreditCard,
-          current: pathname === "/pricing",
+          current: pathname === "/dashboard/settings",
           badge: isSubscribed ? "Active" : "Upgrade",
           badgeColor: isSubscribed ? "bg-[#4CC38A]/15 text-[#4CC38A]" : "bg-[#5E6AD2]/20 text-[#8A95FF]",
         },

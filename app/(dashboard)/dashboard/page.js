@@ -85,6 +85,7 @@ export default function DashboardOverviewPage() {
   const [isLoadingPortal, setIsLoadingPortal] = useState(false);
   const [isCharityModalOpen, setIsCharityModalOpen] = useState(false);
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0 });
+  const [highlightedSection, setHighlightedSection] = useState(null);
 
   // Load Dashboard Data
   const loadDashboardData = async () => {
@@ -104,13 +105,67 @@ export default function DashboardOverviewPage() {
           .maybeSingle();
         setProfile(userProfile);
 
-        // 2. Load Subscription
-        const { data: userSub } = await supabase
-          .from("subscriptions")
-          .select("status, plan, current_period_end, cancel_at_period_end")
-          .eq("user_id", currentUser.id)
-          .eq("status", "active")
-          .maybeSingle();
+        // 2. Load Subscription with Automatic Stripe Session Sync Fallback
+        let userSub = null;
+
+        // Check if redirected from Stripe Checkout with session_id
+        if (typeof window !== "undefined") {
+          const urlParams = new URLSearchParams(window.location.search);
+          const sessionId = urlParams.get("session_id");
+          const isCheckoutSuccess = urlParams.get("checkout") === "success";
+
+          if (sessionId || isCheckoutSuccess) {
+            try {
+              const syncRes = await fetch("/api/stripe/sync-session", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sessionId: sessionId || undefined }),
+              });
+              const syncData = await syncRes.json();
+              if (syncRes.ok && syncData.subscription) {
+                userSub = syncData.subscription;
+                toast.success("Subscription activated successfully! Welcome to Golvo.", {
+                  id: "sub-success",
+                });
+                window.dispatchEvent(new Event("golvo:subscription_updated"));
+                window.history.replaceState(null, "", window.location.pathname);
+              }
+            } catch (e) {
+              console.warn("Session sync notice:", e);
+            }
+          }
+        }
+
+        // If not synced from URL parameter, query Supabase subscriptions
+        if (!userSub) {
+          const { data: dbSub } = await supabase
+            .from("subscriptions")
+            .select("status, plan, current_period_end, cancel_at_period_end")
+            .eq("user_id", currentUser.id)
+            .eq("status", "active")
+            .maybeSingle();
+
+          userSub = dbSub;
+
+          // If still no active subscription found in Supabase, run background sync check with Stripe
+          if (!userSub) {
+            try {
+              const bgRes = await fetch("/api/stripe/sync-session", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({}),
+              });
+              if (bgRes.ok) {
+                const bgData = await bgRes.json();
+                if (bgData.subscription?.status === "active") {
+                  userSub = bgData.subscription;
+                  window.dispatchEvent(new Event("golvo:subscription_updated"));
+                }
+              }
+            } catch {}
+          }
+        }
+
         setSubscription(userSub);
 
         // 3. Load Charity
@@ -155,6 +210,41 @@ export default function DashboardOverviewPage() {
 
   useEffect(() => {
     loadDashboardData();
+
+    const handleSubUpdated = () => {
+      loadDashboardData();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("golvo:subscription_updated", handleSubUpdated);
+      return () => window.removeEventListener("golvo:subscription_updated", handleSubUpdated);
+    }
+  }, []);
+
+  // Hash change and smooth scroll with glowing focus outline
+  useEffect(() => {
+    function handleHash() {
+      if (typeof window === "undefined") return;
+      const hash = window.location.hash.replace("#", "");
+      if (hash) {
+        const targetId = hash === "draws" ? "draw" : hash;
+        setHighlightedSection(targetId);
+
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+
+        const timer = setTimeout(() => {
+          setHighlightedSection(null);
+        }, 2500);
+        return () => clearTimeout(timer);
+      }
+    }
+
+    handleHash();
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
   }, []);
 
   // End of month countdown timer
@@ -230,7 +320,14 @@ export default function DashboardOverviewPage() {
   return (
     <div className="flex-1 max-w-[1440px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
       {/* 1. Subscription & Welcome Header Card */}
-      <div className="p-6 sm:p-7 rounded-[12px] bg-[#0F1011] border border-white/[0.08] relative overflow-hidden backdrop-blur-xl flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-xl">
+      <div
+        id="subscription"
+        className={`p-6 sm:p-7 rounded-[12px] bg-[#0F1011] border border-white/[0.08] relative overflow-hidden backdrop-blur-xl flex flex-col md:flex-row md:items-center justify-between gap-5 shadow-xl scroll-mt-24 transition-all duration-500 ${
+          highlightedSection === "subscription"
+            ? "ring-2 ring-[#5E6AD2] shadow-[0_0_30px_rgba(94,106,210,0.35)]"
+            : ""
+        }`}
+      >
         <div className="space-y-1.5">
           <div className="flex items-center gap-2.5">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
@@ -374,14 +471,28 @@ export default function DashboardOverviewPage() {
       {/* 3. 2-Column Main Layout: Score Manager (Left) & Draw/Charity/Winnings (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column (7 cols): Score Entry & Edit Manager */}
-        <div id="scores" className="lg:col-span-7 space-y-6 scroll-mt-20">
+        <div
+          id="scores"
+          className={`lg:col-span-7 space-y-6 scroll-mt-24 transition-all duration-500 rounded-[12px] ${
+            highlightedSection === "scores"
+              ? "ring-2 ring-[#5E6AD2] shadow-[0_0_30px_rgba(94,106,210,0.35)]"
+              : ""
+          }`}
+        >
           <ScoreManager />
         </div>
 
         {/* Right Column (5 cols): Draw Participation, Charity, & Winnings */}
         <div className="lg:col-span-5 space-y-6">
           {/* Monthly Charity Draw Card with End-of-Month Countdown */}
-          <Card id="draw" className="bg-[#0F1011] border-white/[0.08] relative overflow-hidden shadow-xl scroll-mt-20">
+          <Card
+            id="draw"
+            className={`bg-[#0F1011] border-white/[0.08] relative overflow-hidden shadow-xl scroll-mt-24 transition-all duration-500 ${
+              highlightedSection === "draw" || highlightedSection === "draws"
+                ? "ring-2 ring-[#5E6AD2] shadow-[0_0_30px_rgba(94,106,210,0.35)]"
+                : ""
+            }`}
+          >
             <CardHeader className="p-6 border-b border-white/[0.06] space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -451,7 +562,14 @@ export default function DashboardOverviewPage() {
           </Card>
 
           {/* Charity Impact Card with Slider Trigger */}
-          <Card id="charity" className="bg-[#0F1011] border-white/[0.08] relative overflow-hidden shadow-xl scroll-mt-20">
+          <Card
+            id="charity"
+            className={`bg-[#0F1011] border-white/[0.08] relative overflow-hidden shadow-xl scroll-mt-24 transition-all duration-500 ${
+              highlightedSection === "charity"
+                ? "ring-2 ring-[#5E6AD2] shadow-[0_0_30px_rgba(94,106,210,0.35)]"
+                : ""
+            }`}
+          >
             <CardHeader className="p-6 border-b border-white/[0.06] space-y-1">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -497,7 +615,14 @@ export default function DashboardOverviewPage() {
           </Card>
 
           {/* Winnings Overview Widget */}
-          <Card className="bg-[#0F1011] border-white/[0.08] p-6 space-y-4">
+          <Card
+            id="winnings"
+            className={`bg-[#0F1011] border-white/[0.08] p-6 space-y-4 scroll-mt-24 transition-all duration-500 ${
+              highlightedSection === "winnings"
+                ? "ring-2 ring-[#5E6AD2] shadow-[0_0_30px_rgba(94,106,210,0.35)]"
+                : ""
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-[#4CC38A]" />
