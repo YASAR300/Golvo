@@ -3,7 +3,11 @@ import { stripe } from "@/lib/stripe/server";
 import { createClient } from "@/lib/supabase/server";
 import { adminClient } from "@/lib/supabase/admin";
 import { getAppUrl } from "@/lib/utils/url";
-import { PLANS } from "@/lib/constants";
+import {
+  PLANS,
+  DEFAULT_STRIPE_PRICE_MONTHLY,
+  DEFAULT_STRIPE_PRICE_YEARLY,
+} from "@/lib/constants";
 
 export async function POST(request) {
   try {
@@ -27,15 +31,8 @@ export async function POST(request) {
 
     const priceId =
       plan === PLANS.YEARLY
-        ? process.env.STRIPE_PRICE_YEARLY
-        : process.env.STRIPE_PRICE_MONTHLY;
-
-    if (!priceId) {
-      return NextResponse.json(
-        { error: `Price ID for plan '${plan}' is not configured in .env.local` },
-        { status: 500 }
-      );
-    }
+        ? (process.env.STRIPE_PRICE_YEARLY || DEFAULT_STRIPE_PRICE_YEARLY)
+        : (process.env.STRIPE_PRICE_MONTHLY || DEFAULT_STRIPE_PRICE_MONTHLY);
 
     // 3. Find or create Stripe Customer
     let stripeCustomerId = null;
