@@ -7,8 +7,91 @@ import {
   signupSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  completeProfileSchema,
 } from "@/lib/validators/auth";
 import { getAppUrl } from "@/lib/utils/url";
+
+/**
+ * Server Action: Initiate Google OAuth sign in
+ */
+export async function signInWithGoogleAction() {
+  const supabase = await createClient();
+  const appUrl = getAppUrl();
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${appUrl}/auth/callback`,
+      queryParams: {
+        access_type: "offline",
+        prompt: "consent",
+      },
+    },
+  });
+
+  if (error) {
+    return { error: error.message || "Failed to initialize Google authentication." };
+  }
+
+  if (data?.url) {
+    redirect(data.url);
+  }
+
+  return { error: "Could not retrieve Google authentication URL." };
+}
+
+/**
+ * Server Action: Complete Google Profile (Charity Onboarding)
+ */
+export async function completeGoogleProfileAction(prevState, formData) {
+  const rawData = {
+    fullName: formData.get("fullName"),
+    charityId: formData.get("charityId"),
+  };
+
+  const validation = completeProfileSchema.safeParse(rawData);
+  if (!validation.success) {
+    const fieldErrors = validation.error.flatten().fieldErrors;
+    return {
+      error: Object.values(fieldErrors)[0]?.[0] || "Invalid submission data",
+      fieldErrors,
+    };
+  }
+
+  const { fullName, charityId } = validation.data;
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "Your session has expired. Please sign in again." };
+  }
+
+  const { error: upsertError } = await supabase
+    .from("profiles")
+    .upsert(
+      {
+        id: user.id,
+        email: user.email,
+        full_name: fullName,
+        charity_id: charityId,
+        charity_percent: 10,
+        role: "subscriber",
+      },
+      { onConflict: "id" }
+    );
+
+  if (upsertError) {
+    return {
+      error: upsertError.message || "Failed to save profile. Please try again.",
+    };
+  }
+
+  redirect("/dashboard");
+}
+
 
 /**
  * Server Action: User Login

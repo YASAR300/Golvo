@@ -111,7 +111,7 @@ export function DrawExplainer() {
                     <div className="p-3 rounded-[6px] bg-[#F2C94C]/10 border border-[#F2C94C]/20 flex items-start gap-2 text-[11px] text-[#F2C94C]">
                       <RefreshCw className="w-3.5 h-3.5 mt-0.5 shrink-0 animate-[spin_8s_linear_infinite]" />
                       <span>
-                        <strong>Rollover Guarantee:</strong> If unclaimed, 100% of the 40% pool carries over to next month's jackpot.
+                        <strong>Rollover Guarantee:</strong> If unclaimed, 100% of the 40% pool carries over to next month&apos;s jackpot.
                       </span>
                     </div>
                   )}

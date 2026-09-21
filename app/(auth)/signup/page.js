@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Logo } from "@/components/ui/Logo";
+import { GoogleIcon } from "@/components/ui/GoogleIcon";
 import { SparkleStar } from "@/components/doodles";
 import { createClient } from "@/lib/supabase/client";
 import { signupAction } from "../actions";
@@ -29,9 +30,39 @@ export default function SignupPage() {
   const [charities, setCharities] = useState(defaultCharityOptions);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+
+  const handleGoogleSignUp = async () => {
+    setIsGoogleLoading(true);
+    setErrorMessage("");
+    try {
+      const supabase = createClient();
+      const origin = window.location.origin;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${origin}/auth/callback`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+        toast.error(error.message);
+        setIsGoogleLoading(false);
+      }
+    } catch {
+      setErrorMessage("Failed to initiate Google sign-up. Please try again.");
+      toast.error("Failed to connect to Google");
+      setIsGoogleLoading(false);
+    }
+  };
 
   useEffect(() => {
     async function loadCharities() {
@@ -153,7 +184,34 @@ export default function SignupPage() {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <>
+            {/* Google OAuth Button */}
+            <div className="mb-6">
+              <Button
+                type="button"
+                variant="secondary"
+                size="md"
+                onClick={handleGoogleSignUp}
+                isLoading={isGoogleLoading}
+                leftIcon={!isGoogleLoading && <GoogleIcon size={18} />}
+                className="w-full h-11 text-sm font-medium bg-white/[0.04] hover:bg-white/[0.08] border-white/[0.1] text-white transition-all shadow-sm flex items-center justify-center gap-2"
+              >
+                {isGoogleLoading ? "Connecting to Google..." : "Sign up with Google"}
+              </Button>
+
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/[0.08]" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-[#0F1011] px-3 text-[#8A8F98] text-[11px] tracking-wider font-medium">
+                    Or register with email
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
             <Input
               label="Full Name"
               type="text"
@@ -227,6 +285,7 @@ export default function SignupPage() {
               {isLoading ? "Creating account..." : "Complete Registration"}
             </Button>
           </form>
+          </>
         )}
 
         <div className="mt-6 pt-5 border-t border-white/[0.06] text-center text-xs text-[#8A8F98]">

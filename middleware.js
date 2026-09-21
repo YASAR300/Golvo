@@ -38,12 +38,43 @@ export async function middleware(request) {
 
   const pathname = request.nextUrl.pathname;
 
+  // Protect /complete-profile route
+  if (pathname.startsWith("/complete-profile")) {
+    if (!user) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("charity_id")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    // If charity is already selected, proceed to dashboard
+    if (profile?.charity_id) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+  }
+
   // Protect /dashboard and nested routes
   if (pathname.startsWith("/dashboard")) {
     if (!user) {
       const loginUrl = new URL("/login", request.url);
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
+    }
+
+    // Ensure subscriber has completed profile setup (charity selection)
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("charity_id, role")
+      .eq("id", user.id)
+      .maybeSingle();
+
+    if (!profile?.charity_id && profile?.role !== "admin") {
+      return NextResponse.redirect(new URL("/complete-profile", request.url));
     }
   }
 
@@ -60,7 +91,7 @@ export async function middleware(request) {
       .from("profiles")
       .select("role")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     if (!profile || profile.role !== "admin") {
       const dashboardUrl = new URL("/dashboard", request.url);

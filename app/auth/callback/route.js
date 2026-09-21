@@ -16,12 +16,17 @@ export async function GET(request) {
         return NextResponse.redirect(new URL(next, requestUrl.origin));
       }
 
-      // Role-based destination
+      // Check user profile for charity selection and role
       const { data: profile } = await supabase
         .from("profiles")
-        .select("role")
+        .select("role, charity_id")
         .eq("id", data.user.id)
-        .single();
+        .maybeSingle();
+
+      // If user has not completed profile (no charity assigned), redirect to onboarding
+      if (!profile?.charity_id) {
+        return NextResponse.redirect(new URL("/complete-profile", requestUrl.origin));
+      }
 
       if (profile?.role === "admin") {
         return NextResponse.redirect(new URL("/admin", requestUrl.origin));

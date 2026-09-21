@@ -28,3 +28,4 @@ export { EmptyState } from "./EmptyState";
 export { Spinner } from "./Spinner";
 export { Logo } from "./Logo";
 export { UserMenu } from "./UserMenu";
+export { GoogleIcon } from "./GoogleIcon";
