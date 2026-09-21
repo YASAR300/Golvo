@@ -1,0 +1,1 @@
+export { ScoreManager } from "./ScoreManager";
