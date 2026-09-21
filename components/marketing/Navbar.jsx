@@ -34,11 +34,11 @@ export function Navbar() {
   }, []);
 
   const navLinks = [
-    { label: "How it works", href: "#how-it-works" },
-    { label: "The Draw", href: "#draw" },
-    { label: "Charities", href: "#charities" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "FAQ", href: "#faq" },
+    { label: "How it works", href: "/#how-it-works" },
+    { label: "The Draw", href: "/#draw" },
+    { label: "Charities", href: "/charities" },
+    { label: "Pricing", href: "/pricing" },
+    { label: "FAQ", href: "/#faq" },
   ];
 
   return (

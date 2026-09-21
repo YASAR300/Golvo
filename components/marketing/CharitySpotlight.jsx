@@ -56,7 +56,7 @@ const defaultCharities = [
 
 export function CharitySpotlight() {
   const [charities, setCharities] = useState(defaultCharities);
-  const [featured] = useState(defaultFeatured);
+  const [featured, setFeatured] = useState(defaultFeatured);
 
   useEffect(() => {
     async function loadCharities() {
@@ -65,10 +65,17 @@ export function CharitySpotlight() {
         const { data, error } = await supabase
           .from("charities")
           .select("id, name, slug, description, image_url, is_featured")
-          .eq("is_active", true)
-          .limit(4);
+          .eq("is_active", true);
 
         if (!error && data && data.length > 0) {
+          const featuredCharity = data.find((c) => c.is_featured);
+          if (featuredCharity) {
+            setFeatured({
+              ...defaultFeatured,
+              ...featuredCharity,
+              tagline: featuredCharity.description?.slice(0, 75) + "..." || defaultFeatured.tagline,
+            });
+          }
           const nonFeatured = data.filter((c) => !c.is_featured);
           if (nonFeatured.length > 0) {
             setCharities(
