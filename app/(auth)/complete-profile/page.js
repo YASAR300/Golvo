@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Logo } from "@/components/ui/Logo";
-import { SparkleStar } from "@/components/doodles";
+import { BackStarButton } from "@/components/ui/BackStarButton";
 import { createClient } from "@/lib/supabase/client";
 import { completeGoogleProfileAction } from "../actions";
 
@@ -120,10 +120,8 @@ export default function CompleteProfilePage() {
 
       {/* Centered Glass Card */}
       <div className="relative w-full max-w-md rounded-[12px] bg-[#0F1011]/85 border border-white/[0.1] p-7 sm:p-9 shadow-2xl backdrop-blur-xl">
-        {/* ONE Small Doodle SparkleStar strictly in the corner */}
-        <div className="absolute top-5 right-5 text-white/30 pointer-events-none">
-          <SparkleStar size={18} variant="4-point" />
-        </div>
+        {/* Interactive Corner Star: click to navigate back */}
+        <BackStarButton fallbackUrl="/login" />
 
         <div className="space-y-1 mb-6">
           <div className="flex items-center gap-1.5 text-xs text-[#4CC38A] font-medium mb-1">

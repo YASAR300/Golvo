@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, Mail, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Logo } from "@/components/ui/Logo";
-import { SparkleStar } from "@/components/doodles";
+import { BackStarButton } from "@/components/ui/BackStarButton";
 import { forgotPasswordAction } from "../actions";
 
 export default function ForgotPasswordPage() {
@@ -64,10 +64,8 @@ export default function ForgotPasswordPage() {
       {/* Centered Glass Card */}
       <div className="relative w-full max-w-md rounded-[12px] bg-[#0F1011]/85 border border-white/[0.1] p-7 sm:p-9 shadow-2xl backdrop-blur-xl">
         
-        {/* ONE Small Doodle SparkleStar strictly in the corner */}
-        <div className="absolute top-5 right-5 text-white/30 pointer-events-none">
-          <SparkleStar size={18} variant="4-point" />
-        </div>
+        {/* Interactive Corner Star: click to navigate back */}
+        <BackStarButton fallbackUrl="/login" />
 
         <div className="space-y-1 mb-6">
           <h1 className="text-xl font-bold tracking-tight text-[#F7F8F8]">
