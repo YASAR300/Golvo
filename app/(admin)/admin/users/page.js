@@ -259,6 +259,7 @@ export default function AdminUsersPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8A8F98]" />
           <input
             type="text"
+            data-testid="admin-user-search"
             placeholder="Search by golfer name or email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -326,6 +327,7 @@ export default function AdminUsersPage() {
                   return (
                     <tr
                       key={u.id}
+                      data-testid="user-row"
                       className="hover:bg-white/[0.02] transition-colors group"
                     >
                       <td className="py-3 px-4">

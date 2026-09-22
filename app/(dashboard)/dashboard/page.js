@@ -317,7 +317,7 @@ export default function DashboardOverviewPage() {
       >
         <div className="space-y-1.5">
           <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            <h1 data-testid="dashboard-welcome" className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
               Welcome back, {fullName}
             </h1>
             {profile?.role === "admin" && (
@@ -344,7 +344,10 @@ export default function DashboardOverviewPage() {
         <div className="flex items-center gap-3">
           {isSubscribed ? (
             <div className="flex items-center gap-3 bg-white/[0.02] border border-white/[0.06] p-2 pr-3 rounded-[10px]">
-              <div className="flex items-center gap-2 text-xs text-[#4CC38A] font-medium px-2 py-1 rounded bg-[#4CC38A]/10 border border-[#4CC38A]/25">
+              <div
+                data-testid="subscription-status"
+                className="flex items-center gap-2 text-xs text-[#4CC38A] font-medium px-2 py-1 rounded bg-[#4CC38A]/10 border border-[#4CC38A]/25"
+              >
                 <ShieldCheck className="w-4 h-4" />
                 <span>
                   {subscription.plan === "yearly" ? "Annual Champion" : "Monthly Golfer"}

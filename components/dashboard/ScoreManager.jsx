@@ -386,7 +386,10 @@ export function ScoreManager() {
           </h4>
 
           {formError && (
-            <div className="mb-4 p-2.5 rounded-[6px] bg-[#EB5757]/10 border border-[#EB5757]/20 text-xs text-[#EB5757] flex items-center gap-2">
+            <div
+              data-testid="score-form-error"
+              className="mb-4 p-2.5 rounded-[6px] bg-[#EB5757]/10 border border-[#EB5757]/20 text-xs text-[#EB5757] flex items-center gap-2"
+            >
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{formError}</span>
             </div>
@@ -452,6 +455,7 @@ export function ScoreManager() {
               variant="primary"
               size="md"
               isLoading={isSubmitting}
+              data-testid="score-submit"
               className="w-full sm:w-auto h-9 px-5 text-xs font-semibold shrink-0"
               leftIcon={!isSubmitting && <Plus className="w-3.5 h-3.5" />}
             >
@@ -572,6 +576,8 @@ export function ScoreManager() {
                 return (
                   <div
                     key={item.id}
+                    data-testid="score-item"
+                    data-played-on={item.played_on}
                     className="group p-3.5 rounded-[8px] bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.06] hover:border-white/[0.12] transition-all flex items-center justify-between gap-4"
                   >
                     <div className="flex items-center gap-3.5">
@@ -618,6 +624,7 @@ export function ScoreManager() {
                         onClick={() => handleDeleteScore(item.id, item.played_on)}
                         title="Delete round"
                         aria-label="Delete round"
+                        data-testid="score-delete"
                         className="p-1.5 rounded text-[#8A8F98] hover:text-[#EB5757] hover:bg-[#EB5757]/10 transition-colors"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

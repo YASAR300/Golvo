@@ -224,6 +224,7 @@ export default function AdminCharitiesPage() {
 
           <button
             type="button"
+            data-testid="add-charity"
             onClick={openCreateModal}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#5E6AD2] hover:bg-[#4E5AC0] text-white text-xs font-medium transition-all shadow-md shadow-[#5E6AD2]/20 cursor-pointer"
           >
@@ -358,6 +359,7 @@ export default function AdminCharitiesPage() {
                   </label>
                   <input
                     type="text"
+                    data-testid="charity-name-input"
                     value={name}
                     onChange={(e) => {
                       setName(e.target.value);
@@ -381,6 +383,7 @@ export default function AdminCharitiesPage() {
                   </label>
                   <input
                     type="text"
+                    data-testid="charity-slug-input"
                     value={slug}
                     onChange={(e) => setSlug(e.target.value)}
                     placeholder="junior-golf-foundation"
@@ -548,6 +551,7 @@ export default function AdminCharitiesPage() {
 
               <button
                 type="button"
+                data-testid="charity-form-submit"
                 onClick={handleSaveCharity}
                 disabled={isSaving}
                 className="px-4 py-2 rounded-lg bg-[#5E6AD2] hover:bg-[#4E5AC0] text-white text-xs font-medium transition-colors cursor-pointer"

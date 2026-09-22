@@ -327,6 +327,7 @@ export function Sidebar({ isOpen, onClose }) {
           onClick={handleLogout}
           disabled={isLoggingOut}
           title="Sign out"
+          data-testid="sidebar-logout"
           className="p-1.5 rounded-[6px] text-[#8A8F98] hover:text-[#EB5757] hover:bg-[#EB5757]/10 transition-colors shrink-0"
         >
           <LogOut className="w-4 h-4" />
@@ -344,7 +345,7 @@ export function Sidebar({ isOpen, onClose }) {
 
       {/* Mobile drawer with backdrop */}
       {isOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex">
+        <div data-testid="mobile-sidebar-drawer" className="md:hidden fixed inset-0 z-50 flex">
           <div
             className="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
             onClick={onClose}

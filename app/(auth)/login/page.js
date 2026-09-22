@@ -108,7 +108,7 @@ export default function LoginPage() {
         </div>
 
         {errorMessage && (
-          <div className="mb-5 p-3 rounded-[6px] bg-[#EB5757]/10 border border-[#EB5757]/20 text-xs text-[#EB5757]">
+          <div data-testid="login-error" className="mb-5 p-3 rounded-[6px] bg-[#EB5757]/10 border border-[#EB5757]/20 text-xs text-[#EB5757]">
             {errorMessage}
           </div>
         )}
@@ -148,6 +148,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
+            data-testid="login-email"
             leftIcon={<Mail className="w-4 h-4" />}
           />
 
@@ -170,6 +171,7 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="current-password"
+              data-testid="login-password"
               leftIcon={<Lock className="w-4 h-4" />}
               rightIcon={
                 <button
@@ -193,6 +195,7 @@ export default function LoginPage() {
             variant="primary"
             size="md"
             isLoading={isLoading}
+            data-testid="login-submit"
             className="w-full h-11 text-sm font-semibold mt-2"
             rightIcon={!isLoading && <ArrowRight className="w-4 h-4" />}
           >

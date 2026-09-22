@@ -18,6 +18,7 @@ export default function DashboardCharityPage() {
   const [planPrice, setPlanPrice] = useState(9.99);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [charityError, setCharityError] = useState("");
 
   const loadData = async () => {
     try {
@@ -74,6 +75,13 @@ export default function DashboardCharityPage() {
   }, []);
 
   const handleSaveSettings = async (overrideCharityId = null) => {
+    const numPercent = Number(charityPercent);
+    if (isNaN(numPercent) || numPercent < 10) {
+      setCharityError("Contribution must be at least 10%.");
+      toast.error("Contribution must be at least 10%.");
+      return;
+    }
+    setCharityError("");
     setIsSaving(true);
     const targetCharityId = overrideCharityId || selectedCharityId;
     try {
@@ -151,16 +159,34 @@ export default function DashboardCharityPage() {
           </span>
         </div>
 
-        <div className="space-y-4">
-          <input
-            type="range"
-            min="10"
-            max="100"
-            step="5"
-            value={charityPercent}
-            onChange={(e) => setCharityPercent(parseInt(e.target.value, 10))}
-            className="w-full accent-[#EB5757] cursor-pointer h-2 bg-white/10 rounded-lg"
-          />
+          <div className="flex items-center gap-4">
+            <input
+              type="range"
+              min="10"
+              max="100"
+              step="5"
+              value={charityPercent}
+              onChange={(e) => {
+                setCharityPercent(parseInt(e.target.value, 10));
+                setCharityError("");
+              }}
+              className="w-full accent-[#EB5757] cursor-pointer h-2 bg-white/10 rounded-lg"
+            />
+            <input
+              type="number"
+              min="10"
+              max="100"
+              name="charityPercent"
+              data-testid="charity-percent"
+              value={charityPercent}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                setCharityPercent(isNaN(val) ? "" : val);
+                setCharityError("");
+              }}
+              className="w-20 px-2 py-1 rounded bg-[#141516] border border-white/15 text-white text-xs font-bold text-center"
+            />
+          </div>
 
           <div className="flex justify-between text-[11px] text-[#8A8F98]">
             <span>Min 10% (Required)</span>
@@ -170,6 +196,12 @@ export default function DashboardCharityPage() {
             <span>100% Maximum</span>
           </div>
 
+          {charityError && (
+            <div data-testid="charity-error" className="p-3 rounded-[8px] bg-[#EB5757]/15 border border-[#EB5757]/30 text-xs text-[#EB5757] font-medium">
+              {charityError}
+            </div>
+          )}
+
           <div className="p-4 rounded-[10px] bg-[#EB5757]/10 border border-[#EB5757]/25 flex items-center justify-between">
             <div className="space-y-0.5">
               <span className="text-xs text-[#FF9E9E] font-medium">Automatic Charity Donation:</span>
@@ -178,7 +210,9 @@ export default function DashboardCharityPage() {
               </p>
             </div>
             <div className="text-right">
-              <div className="text-2xl font-black text-white">${liveDonationDollars}</div>
+              <div data-testid="charity-preview" className="text-2xl font-black text-white">
+                ${liveDonationDollars}
+              </div>
               <span className="text-[10px] text-[#8A8F98]">per billing cycle</span>
             </div>
           </div>
@@ -187,6 +221,7 @@ export default function DashboardCharityPage() {
             <Button
               variant="primary"
               size="sm"
+              data-testid="charity-save"
               onClick={() => handleSaveSettings()}
               isLoading={isSaving}
               className="text-xs bg-[#5E6AD2] hover:bg-[#6875E8]"
@@ -199,7 +234,25 @@ export default function DashboardCharityPage() {
 
       {/* Select Partner Charity */}
       <div className="space-y-4">
-        <h3 className="text-base font-bold text-white">Choose Your Partner Charity</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <h3 className="text-base font-bold text-white">Choose Your Partner Charity</h3>
+          <select
+            data-testid="charity-selector"
+            name="charityId"
+            value={selectedCharityId}
+            onChange={(e) => {
+              setSelectedCharityId(e.target.value);
+              handleSaveSettings(e.target.value);
+            }}
+            className="px-3 py-1.5 rounded-[8px] bg-[#141516] border border-white/15 text-white text-xs focus:outline-none focus:border-[#5E6AD2]"
+          >
+            {charities.map((c) => (
+              <option key={c.id} value={c.id} className="bg-[#0F1011] text-white">
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {charities.map((c) => {

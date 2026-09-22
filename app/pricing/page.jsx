@@ -344,6 +344,7 @@ export default function PricingPage() {
                   variant={selectedPlan === PLANS.MONTHLY ? "primary" : "secondary"}
                   size="lg"
                   className="w-full font-semibold h-11"
+                  data-testid="subscribe-monthly"
                   isLoading={isLoadingCheckout && checkoutPlan === PLANS.MONTHLY}
                   onClick={(e) => {
                     e.stopPropagation();
@@ -438,6 +439,7 @@ export default function PricingPage() {
                   variant="primary"
                   size="lg"
                   className="w-full font-bold h-11 bg-[#5E6AD2] hover:bg-[#6875E8] shadow-[0_0_24px_rgba(94,106,210,0.4)] text-white"
+                  data-testid="subscribe-annual"
                   isLoading={isLoadingCheckout && checkoutPlan === PLANS.YEARLY}
                   onClick={(e) => {
                     e.stopPropagation();

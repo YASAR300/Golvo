@@ -34,11 +34,11 @@ export function Navbar() {
   }, []);
 
   const navLinks = [
-    { label: "How it works", href: "/#how-it-works" },
-    { label: "The Draw", href: "/#draw" },
-    { label: "Charities", href: "/charities" },
-    { label: "Pricing", href: "/pricing" },
-    { label: "FAQ", href: "/#faq" },
+    { label: "How it works", href: "/#how-it-works", testId: "nav-how-it-works" },
+    { label: "The Draw", href: "/#draw", testId: "nav-draw" },
+    { label: "Charities", href: "/charities", testId: "nav-charities" },
+    { label: "Pricing", href: "/pricing", testId: "nav-pricing" },
+    { label: "FAQ", href: "/#faq", testId: "nav-faq" },
   ];
 
   return (
@@ -58,6 +58,7 @@ export function Navbar() {
             <a
               key={link.label}
               href={link.href}
+              data-testid={link.testId}
               className="transition-colors hover:text-[#F7F8F8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5E6AD2] rounded px-1.5 py-1"
             >
               {link.label}

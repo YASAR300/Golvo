@@ -131,34 +131,34 @@ export default function WinningsPage() {
     switch (status) {
       case "pending_proof":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#F2C94C]/15 border border-[#F2C94C]/30 text-[#F2C94C]">
+          <span data-testid="proof-status" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#F2C94C]/15 border border-[#F2C94C]/30 text-[#F2C94C]">
             <Clock className="w-3.5 h-3.5" />
             Proof Required
           </span>
         );
       case "submitted":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#5E6AD2]/15 border border-[#5E6AD2]/30 text-[#8A95FF]">
+          <span data-testid="proof-status" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#5E6AD2]/15 border border-[#5E6AD2]/30 text-[#8A95FF]">
             <Clock className="w-3.5 h-3.5" />
             Under Review
           </span>
         );
       case "approved":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#4CC38A]/15 border border-[#4CC38A]/30 text-[#4CC38A]">
+          <span data-testid="proof-status" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#4CC38A]/15 border border-[#4CC38A]/30 text-[#4CC38A]">
             <CheckCircle2 className="w-3.5 h-3.5" />
             Proof Approved
           </span>
         );
       case "rejected":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#EB5757]/15 border border-[#EB5757]/30 text-[#EB5757]">
+          <span data-testid="proof-status" className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#EB5757]/15 border border-[#EB5757]/30 text-[#EB5757]">
             <XCircle className="w-3.5 h-3.5" />
             Rejected — Re-upload
           </span>
         );
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge data-testid="proof-status" variant="secondary">{status}</Badge>;
     }
   };
 
@@ -283,6 +283,7 @@ export default function WinningsPage() {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-1">
                       <input
                         type="file"
+                        data-testid="proof-upload"
                         accept="image/png, image/jpeg, image/webp"
                         ref={(el) => (fileInputRefs.current[w.id] = el)}
                         onChange={(e) => handleFileChange(w.id, e)}
@@ -292,6 +293,7 @@ export default function WinningsPage() {
                       <Button
                         variant="primary"
                         size="sm"
+                        data-testid="proof-submit"
                         onClick={() => handleUploadProof(w.id)}
                         isLoading={uploadingWinnerId === w.id}
                         disabled={!selectedFiles[w.id]}

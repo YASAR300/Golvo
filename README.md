@@ -1,175 +1,441 @@
 # Golvo
 
-> **Golf Performance Tracking & Monthly Charity Jackpot Draws Platform**
+<div align="center">
 
-Golvo is a web platform connecting golfers with verified Stableford handicap progression, rolling 5-score ticket generation, and automated participation in high-impact monthly jackpot prize draws that fund registered 501(c)(3) charities.
-
----
-
-## Features
-
-- **Linear-Style Dark Aesthetic**: High-density, minimalist dark UI (`#08090A`), hairline borders, backdrop blur, and pure SVG sparklines.
-- **Keyboard-Friendly**: Universal `⌘K` / `Ctrl+K` Command Palette for quick search, navigation, and modal actions.
-- **Stableford 5-Score Rolling Engine**: Automatic retention of a golfer's latest 5 verified rounds (1–45) forming their active monthly draw ticket.
-- **Monthly Draw Generator**:
-  - **Random Mode**: Draws 5 unique numbers (1–45).
-  - **Algorithmic Mode**: Weighted by active subscribers' rolling score frequency (`most-frequent` or `least-frequent`).
-  - **Prize Pool Distribution**: 40% Match 5 Jackpot (rolls over if unclaimed), 35% Match 4, 25% Match 3.
-- **Charity Give-Back**: Configurable 10% to 100% allocation of member subscription fee directed to chosen non-profit partners (e.g. *Youth on Course*, *First Tee*), with support for independent one-time donations.
-- **Winner Proof Verification**: Secure scorecard photo upload to private Supabase Storage, temporary signed URL generation for admin audit, approve/reject workflow with feedback, and Stripe payout tracking.
-- **Full Admin Console**:
-  - **Analytics & Reports**: Platform totals, active subscriber count, charity contribution totals, and SVG prize pool history bar charts.
-  - **User Directory**: Search, role management, subscription management, and direct score editing.
-  - **Draw Operations**: Simulation preview, payout preview, and one-click publishing.
-  - **Charities Manager**: Create, edit, delete, schedule events, and upload media to Supabase Storage bucket `charity-media`.
-  - **Winner Claims**: Inspect submitted scorecards via secure signed URLs, approve or reject, and mark payouts completed.
-
----
-
-## Tech Stack
-
-- **Framework**: Next.js 16 (App Router, JavaScript)
-- **Styling**: Tailwind CSS v4 (Linear-inspired design system tokens)
-- **Database & Auth**: Supabase (`@supabase/supabase-js`, `@supabase/ssr`)
-- **Payments & Subscriptions**: Stripe (`stripe`, `@stripe/stripe-js`)
-- **Icons & Animation**: Lucide React, Framer Motion
-- **Validation & Feedback**: Zod, React Hot Toast
-
----
-
-## Environment Variables
-
-| Variable Name | Required | Description | Example / Fallback |
-|---|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | **Yes** | Supabase project API URL | `https://xxxx.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | **Yes** | Supabase publishable anonymous key | `sb_publishable_...` |
-| `SUPABASE_SERVICE_ROLE_KEY` | **Yes** | Supabase service role secret (server-only) | `sb_secret_...` |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | **Yes** | Stripe publishable test/live key | `pk_test_...` |
-| `STRIPE_SECRET_KEY` | **Yes** | Stripe secret key (server-only) | `sk_test_...` |
-| `STRIPE_WEBHOOK_SECRET` | **Yes** | Signing secret for Stripe webhooks | `whsec_...` |
-| `STRIPE_PRICE_MONTHLY` | **Yes** | Stripe Recurring Price ID for $9.99/mo | `price_1UI9vf...` |
-| `STRIPE_PRICE_YEARLY` | **Yes** | Stripe Recurring Price ID for $95.88/yr | `price_1UI9vf...` |
-| `APP_URL` | Optional | Public application base URL | `https://golvo.vercel.app` or `http://localhost:3000` |
-| `NEXT_PUBLIC_APP_URL` | Optional | Public application base URL for client | `https://golvo.vercel.app` or `http://localhost:3000` |
-
----
-
-## Setup Guide
-
-### 1. Database Setup (Supabase)
-
-1. Create a project at [supabase.com](https://supabase.com).
-2. Go to **SQL Editor** from the left sidebar in your Supabase project dashboard.
-3. Open `supabase/schema.sql` from this repository, paste the entire contents into the SQL Editor, and click **Run**.
-   - This provisions all 8 core tables (`profiles`, `charities`, `subscriptions`, `scores`, `donations`, `draws`, `draw_entries`, `winners`).
-   - Configures triggers for automatic profile creation on signup and 5-score rolling retention.
-   - Applies Row Level Security (RLS) policies and admin helper functions.
-4. Go to **Storage** in Supabase and ensure the following buckets exist:
-   - `charity-media` (Public bucket for charity partner logos & photos).
-   - `winner-proofs` or `scorecard-proofs` (Private bucket for winner scorecards).
-
-### 2. Stripe Configuration
-
-1. Create a free account at [stripe.com](https://stripe.com) and enable **Test Mode**.
-2. Run the price provisioning script to automatically create products and prices:
-   ```bash
-   node scripts/setup-stripe.js
-   ```
-3. Copy the generated `STRIPE_PRICE_MONTHLY` and `STRIPE_PRICE_YEARLY` into `.env.local`.
-4. In **Stripe Dashboard > Settings > Customer Portal**, enable:
-   - Allow customers to cancel subscriptions.
-   - Allow customers to switch plans.
-   - Add your business logo and terms of service link.
-
-### 3. Local Webhook Forwarding
-
-Install the [Stripe CLI](https://docs.stripe.com/stripe-cli) and forward events:
-
-```bash
-stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+   ____      ___      __     __    __   ____
+  / ___| ___ | | \   /\ \   / /__  \ \ / /  _ \
+ | |  _ / _ \| |  \ / /\ \ / / _ \  \ V /| | | |
+ | |_| | (_) | |   V /  \ V / (_) |  | | | |_| |
+  \____|\___/|_|    /    \_/ \___/   |_| |____/
 ```
 
-Copy the printed `whsec_...` secret to `STRIPE_WEBHOOK_SECRET` in `.env.local`.
+### The Premier Golf Performance Tracking & Monthly Charity Jackpot Platform
 
-### 4. Seed Test Data
+[![Next.js](https://img.shields.io/badge/Next.js-16.3-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20%7C%20Auth%20%7C%20Storage-3ecf8e?style=flat-square&logo=supabase)](https://supabase.com/)
+[![Stripe](https://img.shields.io/badge/Stripe-Subscriptions%20%26%20Webhooks-635bff?style=flat-square&logo=stripe)](https://stripe.com/)
+[![Playwright](https://img.shields.io/badge/Playwright-E2E%20Tested-2EAD33?style=flat-square&logo=playwright)](https://playwright.dev/)
 
-Run the database seed script to populate sample charities, draws, and pre-configured test users:
+---
 
-```bash
-npm run seed
-# or: node scripts/seed.js
+**Golvo** merges real-world golf performance tracking with automated lottery-style charity jackpots. Golfers log their certified Stableford rounds, maintain a rolling 5-score handicap ticket, and automatically participate in monthly cash draws that fund registered 501(c)(3) charities.
+
+</div>
+
+---
+
+## 📖 Table of Contents
+
+1. [Executive Summary](#-executive-summary)
+2. [Core Platform Pillars](#-core-platform-pillars)
+3. [System Architecture](#-system-architecture)
+4. [User Journeys & Lifecycle Flow](#-user-journeys--lifecycle-flow)
+5. [Core Engine & Business Logic](#-core-engine--business-logic)
+   - [The Stableford 5-Score Rolling Engine](#1-the-stableford-5-score-rolling-engine)
+   - [The Monthly Draw & Jackpot Engine](#2-the-monthly-draw--jackpot-engine)
+   - [The Charity Give-Back Mechanism](#3-the-charity-give-back-mechanism)
+   - [Scorecard Audit & Verification Pipeline](#4-scorecard-audit--verification-pipeline)
+6. [Platform Modules & Feature Map](#-platform-modules--feature-map)
+7. [Database Architecture & Entity Relationships](#-database-architecture--entity-relationships)
+8. [Security, Access Control & Compliance](#-security-access-control--compliance)
+9. [UI/UX Design Philosophy](#-uiux-design-philosophy)
+
+---
+
+## 🎯 Executive Summary
+
+Traditional golf apps track handicaps in isolation, while charity lotteries require manual ticket purchasing disconnected from personal sporting achievements.
+
+**Golvo bridges this gap:**
+- **Your Golf Game Is Your Ticket**: Golfers play their normal weekend or competition rounds and record their Stableford score (1–45 points).
+- **Rolling 5-Score Queue**: A golfer's most recent 5 certified rounds automatically form their 5-number entry ticket for the monthly draw.
+- **Philanthropy Built-In**: 10% to 100% of every member's subscription is routed directly to non-profit organizations supporting youth access, veteran rehabilitation, and ecological preservation.
+- **Audited Cash Jackpots**: Unclaimed jackpots roll over month-to-month, with automated tier distributions for Match 3, Match 4, and Match 5 winners verified against official physical scorecards.
+
+---
+
+## 🌟 Core Platform Pillars
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                 GOLVO                                       │
+└──────────────┬──────────────────────────────┬───────────────────────────────┘
+               │                              │
+               ▼                              ▼
+     ┌──────────────────┐           ┌──────────────────┐
+     │ 🏌️ GOLF GAME     │           │ 💖 CHARITY       │
+     │  - Stableford    │           │  - 10%–100% fee  │
+     │  - 5-Score Queue │           │  - Youth / Vets  │
+     │  - Anti-Sandbag  │           │  - Direct Impact │
+     └─────────┬────────┘           └─────────┬────────┘
+               │                              │
+               └──────────────┬───────────────┘
+                              │
+                              ▼
+                    ┌──────────────────┐
+                    │ 🎟️ JACKPOT DRAW   │
+                    │  - Match 3, 4, 5 │
+                    │  - Rollover Pool │
+                    │  - Audit Claims  │
+                    └──────────────────┘
+```
+
+1. **Precision Performance**: Automatic retention of the latest 5 verified rounds prevents stale tickets and eliminates handicapping manipulation.
+2. **Effortless Philanthropy**: Members choose their primary cause during onboarding and can adjust their allocation slider anytime from 10% up to 100%.
+3. **Transparent Odds & Fairness**: Draws support both pure cryptographic pseudo-random generation and community frequency-weighted algorithmic distributions.
+4. **Verifiable Audit Trail**: High-tier winners must submit physical scorecard evidence reviewed by compliance administrators before payout disbursement.
+
+---
+
+## 🏗️ System Architecture
+
+Golvo is built on Next.js App Router, using Server Actions, Middleware session validation, PostgreSQL Row Level Security (RLS), and Stripe webhook synchronization.
+
+```mermaid
+flowchart TD
+    subgraph Client["Client Tier (Web Browser / Mobile)"]
+        UI["Linear-Dark UI (Tailwind v4)"]
+        KBD["Command Palette (⌘K)"]
+        State["React Client State & Toasts"]
+    end
+
+    subgraph AppServer["Next.js Application Tier"]
+        MW["Middleware Guard (/dashboard, /admin, /complete-profile)"]
+        SA["Server Actions (Auth, Scores, Profile, Draws)"]
+        API["Route Handlers (/api/stripe/webhook, /api/scores, etc.)"]
+    end
+
+    subgraph Services["External & Data Services"]
+        direction TB
+        subgraph Supabase["Supabase Cloud"]
+            Auth["Supabase Auth (GoTrue + Google OAuth)"]
+            DB[("PostgreSQL Database (8 Core Tables + RLS)")]
+            Storage["Supabase Storage (charity-media, winner-proofs)"]
+        end
+
+        subgraph Stripe["Stripe Billing"]
+            Sub["Stripe Subscriptions ($9.99/mo, $95.88/yr)"]
+            Portal["Customer Billing Portal"]
+            Hook["Webhooks (Subscription Lifecycle)"]
+        end
+    end
+
+    Client -->|HTTP / React Server Components| MW
+    MW -->|Authorized Navigation| SA
+    MW -->|Public / Webhook Traffic| API
+
+    SA -->|Supabase SSR Client| Auth
+    SA -->|Server Role Client / RLS| DB
+    SA -->|Presigned URLs & Uploads| Storage
+    SA -->|Checkout & Portal Sessions| Sub
+
+    Hook -->|invoice.paid, sub.updated| API
+    API -->|Sync Status & Tier| DB
 ```
 
 ---
 
-## Test Credentials
+## 🔄 User Journeys & Lifecycle Flow
 
-After running `npm run seed`:
+### 1. The Golfer Journey
 
-### 1. Platform Administrator
-- **Email**: `admin@golvo.test`
-- **Password**: `GolvoAdmin2026!`
-- **Access**: Full access to `/admin` (Users, Draws, Charities, Winners, Analytics).
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Golfer as Golfer (Member)
+    participant App as Golvo Web App
+    participant Auth as Supabase Auth
+    participant Stripe as Stripe Billing
+    participant DB as PostgreSQL DB
+    actor Admin as Platform Admin
 
-### 2. Active Subscriber Golfer
-- **Email**: `user@golvo.test`
-- **Password**: `GolvoUser2026!`
-- **Status**: Active Monthly Subscriber ($9.99/mo).
-- **Scores**: 5 verified rounds pre-populated (`38, 35, 41, 33, 37`).
-- **Charity**: *Youth on Course* (15% allocated).
+    Golfer->>App: Signs up (Email/Password or Google)
+    App->>Auth: Provisions user account
+    App->>DB: Prompts Charity Selection (Min. 10%)
+    Golfer->>App: Subscribes ($9.99/mo or $95.88/yr)
+    App->>Stripe: Opens Stripe Checkout
+    Stripe-->>App: Webhook confirms active subscription
+    App->>DB: Unlocks Member Dashboard
 
----
+    loop 5-Score Queue Maintenance
+        Golfer->>App: Logs certified round (1–45 pts)
+        App->>DB: Upserts score & enforces 5-score FIFO rule
+        DB-->>Golfer: Active 5-Ball Draw Ticket Generated
+    end
 
-## Vercel Deployment (Step-by-Step for a New Account)
+    Admin->>App: Executes monthly jackpot draw
+    App->>DB: Compares user tickets against winning balls
+    DB-->>Golfer: Match 3, 4, or 5 winner alert!
 
-1. Push this repository to GitHub or GitLab.
-2. Sign in to [Vercel](https://vercel.com/) and click **Add New Project**.
-3. Import the `Golvo` repository.
-4. In **Configure Project > Environment Variables**, add all keys from the table above:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
-   - `STRIPE_SECRET_KEY`
-   - `STRIPE_WEBHOOK_SECRET`
-   - `STRIPE_PRICE_MONTHLY`
-   - `STRIPE_PRICE_YEARLY`
-   - `NEXT_PUBLIC_APP_URL` = `https://<your-project-name>.vercel.app`
-   - `APP_URL` = `https://<your-project-name>.vercel.app`
-5. Click **Deploy**.
-6. In **Stripe Dashboard > Developers > Webhooks**:
-   - Add endpoint: `https://<your-project-name>.vercel.app/api/stripe/webhook`
-   - Events to listen for:
-     - `checkout.session.completed`
-     - `customer.subscription.created`
-     - `customer.subscription.updated`
-     - `customer.subscription.deleted`
-     - `invoice.paid`
-     - `invoice.payment_succeeded`
-     - `invoice.payment_failed`
-   - Copy the live endpoint's signing secret and update `STRIPE_WEBHOOK_SECRET` in Vercel project settings.
+    Golfer->>App: Uploads scorecard photo for claim
+    App->>DB: Stores proof in private storage bucket
+    Admin->>App: Reviews scorecard proof via signed URL
+    Admin->>App: Approves claim & initiates payout
+```
 
 ---
 
-## Verification & QA Checklist (PRD Conformance)
+## ⚙️ Core Engine & Business Logic
 
-| Feature Area | Verification Procedure | Expected Result | Status |
-|---|---|---|---|
-| **1. Authentication** | Sign up with email/password; log out; sign in with valid & invalid passwords; trigger password reset. | Profile record auto-created in Supabase; auth tokens stored; redirection to `/dashboard`. | ✅ Verified |
-| **2. Subscription Checkout** | Click "Upgrade" on `/pricing` for Monthly ($9.99) or Annual ($95.88). | Stripe Checkout opens with authenticated user prefilled; upon payment, redirects to `/dashboard?checkout=success` and immediately transitions tier pill to active. | ✅ Verified |
-| **3. Non-Subscriber Gate** | Visit `/dashboard` or `/dashboard/scores` as unsubscribed user. | Restricted banner displayed; score logging locked with clear upgrade CTA; draw preview accessible without ticket entry. | ✅ Verified |
-| **4. 5-Score Rolling Engine** | Log 5 scores (1–45). Add a 6th score on a newer date. | Oldest (5th) score is automatically purged; ticket always maintains exactly the 5 latest rounds. Duplicate dates rejected. | ✅ Verified |
-| **5. Charity Give-Back Slider** | Move allocation slider from 10% to 100% on `/dashboard/charity`. Save changes. | Live monthly dollar calculation updates; saved to `profiles.charity_percent`; invoice shares disburse correctly. | ✅ Verified |
-| **6. Draw Simulation** | Navigate to `/admin/draws`; choose `random` or `algorithmic`; click "Run Simulation". | 5 balls drawn; user tickets evaluated; Match 5, 4, 3 tier winners and payouts computed; rollover carried forward. | ✅ Verified |
-| **7. Draw Publishing** | Click "Publish Official Draw" in Admin. | Results locked, marked `published`; winners created in `winners` table; visible on public and golfer draws history. | ✅ Verified |
-| **8. Winner Proof & Audit** | Winner uploads scorecard screenshot in `/winnings`. Admin audits in `/admin/winners`. | Image stored in Supabase Storage; admin views via temporary signed URL; Approve activates payout; Reject prompts reason and allows re-upload. | ✅ Verified |
-| **9. Admin Security** | Attempt accessing `/admin` as subscriber. Make GET request to `/api/admin/analytics`. | Access denied screen; API returns `403 Forbidden: Admin privileges required`. | ✅ Verified |
-| **10. Responsive & Mobile** | Resize browser to 375px (iPhone SE). Open drawer menu. | Sidebar collapses to drawer with backdrop; top header hamburger triggers smooth overlay; zero horizontal overflow. | ✅ Verified |
-| **11. Loading Skeletons** | Navigate between dashboard and admin routes on slow 3G. | Clean pulsing skeleton placeholders (`Skeleton`, `CardSkeleton`, `TableSkeleton`) display without layout shifts. | ✅ Verified |
-| **12. Error Boundaries** | Simulate offline error or invalid URL (e.g. `/invalid-route-404`). | Sleek dark 404 page with "Out of Bounds" theme and global error boundary with retry action. | ✅ Verified |
+### 1. The Stableford 5-Score Rolling Engine
+
+The core foundation of Golvo is the **Modified Stableford scoring format**, standardized between 1 and 45 points per 18-hole round:
+
+```
+Score Entry (1–45)  ───►  [ Round 1 ] [ Round 2 ] [ Round 3 ] [ Round 4 ] [ Round 5 ]
+                                │                                            │
+                                └────────────────────┬───────────────────────┘
+                                                     ▼
+                                        Active 5-Number Draw Ticket
+```
+
+- **Retention Constraint**: Every golfer retains **exactly 5 active scores**.
+- **FIFO Replacement Trigger**: When a 6th round is submitted, the database trigger automatically purges the oldest score by `played_on` date.
+- **Integrity Validation**:
+  - Scores strictly limited to integer values between `1` and `45`.
+  - Duplicate rounds on the same calendar date for the same user are rejected.
+  - Handicap differential indexing is recorded alongside course rating and slope.
 
 ---
 
-## License
+### 2. The Monthly Draw & Jackpot Engine
 
-Private repository. All rights reserved © 2026 Golvo.
+On the final day of each calendar month, Golvo executes the official draw.
+
+```mermaid
+flowchart LR
+    Pool["Total Subscription Pool"] --> Net["Net Prize Fund"]
+    Pool --> Charity["Charity Allocation (10%–100%)"]
+
+    Net --> T5["Match 5 Jackpot (40% + Rollovers)"]
+    Net --> T4["Match 4 Tier (35%)"]
+    Net --> T3["Match 3 Tier (25%)"]
+
+    T5 -->|No Winners| Roll["Rolls over to next month's Jackpot"]
+    T5 -->|Winners| Claim5["Disbursed to Match 5 Winners"]
+    T4 --> Claim4["Disbursed to Match 4 Winners"]
+    T3 --> Claim3["Disbursed to Match 3 Winners"]
+```
+
+#### Draw Execution Modes
+1. **Random Generator**: Selects 5 distinct numbers between 1 and 45 using cryptographically secure entropy.
+2. **Algorithmic Generator**: Selects winning numbers weighted by community scoring distributions:
+   - `most-frequent`: Biased toward balls matching the common handicapping clusters.
+   - `least-frequent`: Rewards outlier high/low handicappers.
+
+#### Prize Pool Distribution Formula
+$$\text{Net Prize Pool} = \text{Gross Subscription Revenue} - \text{Charity Allocations} - \text{Platform Reserve}$$
+
+- **Match 5 (Jackpot)**: **40%** of net pool + accrued rollover balance.
+- **Match 4 (Tier 2)**: **35%** of net pool distributed equally among all 4-ball matches.
+- **Match 3 (Tier 3)**: **25%** of net pool distributed equally among all 3-ball matches.
+
+---
+
+### 3. The Charity Give-Back Mechanism
+
+Golvo is fundamentally built to create sustainable, recurring funding for golf-centered and community non-profits.
+
+```
+       Member Subscription ($9.99/mo)
+                     │
+    ┌────────────────┴────────────────┐
+    ▼                                 ▼
+Default Charity Share (10%)     Golfer Discretionary Add-on (Up to 90%)
+  [$1.00 / month]                 [Up to $9.00 / month]
+    │                                 │
+    └────────────────┬────────────────┘
+                     ▼
+          Total Charity Allocation
+        (Selected Partner 501(c)(3))
+```
+
+- **Guaranteed Baseline**: A minimum of 10% of every active subscription is earmarked for charity.
+- **User Discretionary Slider**: Golfers can set their contribution from 10% up to 100% through the interactive charity slider in `/dashboard/charity`.
+- **Beneficiary Partners**:
+  - *Youth on Course*: Subsidizing rounds for junior golfers under 18.
+  - *First Tee Foundation*: Character development and life skills through golf.
+  - *PGA HOPE*: Rehabilitating military veterans through developmental clinics.
+  - *Adaptive Golf Association*: Specialized equipment for individuals with physical challenges.
+  - *Save the Greens Trust*: Environmental stewardship and pollinator sanctuaries on golf courses.
+
+---
+
+### 4. Scorecard Audit & Verification Pipeline
+
+To maintain jackpot integrity and prevent fraudulent score submission, Golvo implements a compliance verification protocol:
+
+```mermaid
+stateDiagram-v2
+    [*] --> TicketMatched: System detects Match 3/4/5
+    TicketMatched --> PendingClaim: Winner notified on Dashboard
+    PendingClaim --> ProofSubmitted: Golfer uploads physical scorecard photo
+    ProofSubmitted --> UnderAudit: Admin audits attested scores vs ticket
+    UnderAudit --> Approved: Admin approves claim
+    UnderAudit --> Rejected: Inconsistent scorecard or uncertified round
+    Rejected --> ProofSubmitted: Golfer resubmits corrected proof
+    Approved --> PaidOut: Stripe transfer or ACH payout marked complete
+    PaidOut --> [*]
+```
+
+1. **Proof Storage**: Scorecard images are stored in a private Supabase Storage bucket (`scorecard-proofs`).
+2. **Zero Public Access**: Buckets are inaccessible to the public; only authenticated admins can generate temporary signed URLs (expiring in 15 minutes) for review.
+3. **Audit Criteria**: Admin checks player name, attested markers, handicap verification, and round date against the logged score.
+
+---
+
+## 🖥️ Platform Modules & Feature Map
+
+### 1. Public & Marketing Surface
+- **Hero & Value Proposition**: Interactive product preview, real-time prize pool counter, and social proof.
+- **Charities Directory (`/charities`)**: Public directory with instant name search, cause categorization, and detail pages (`/charities/[slug]`) featuring upcoming volunteer events.
+- **Transparent Pricing (`/pricing`)**: Clear pricing breakdown ($9.99/mo or $95.88/yr) showing the exact dollar split between prize pool and charity give-back.
+
+### 2. Golfer Experience (`/dashboard`)
+- **Performance Overview**: Current 5-score average, rolling trend sparklines, and active charity allocation indicator.
+- **5-Score Manager (`/dashboard/scores`)**:
+  - Live 5-ball ticket display with certified round badges.
+  - Score entry modal with input constraints, course slope/rating, and date picker.
+  - Inline score deletion and history timeline.
+- **Charity Give-Back Center (`/dashboard/charity`)**: Interactive slider (10% to 100%) calculating immediate annual impact, charity selection switcher, and one-off donation support.
+- **Winnings & Claims Center (`/winnings`)**: Historic draw results, ticket match verification, and scorecard proof upload interface.
+
+### 3. Command Palette (`⌘K` / `Ctrl+K`)
+- Integrated Raycast/Linear-style command palette available globally across dashboard and admin areas.
+- Category filters: *Views*, *Actions*, *Charity*, *Prizes*, and *Settings*.
+- Instant keyboard navigation with arrow keys and `Enter` execution.
+
+### 4. Administration Console (`/admin`)
+- **Analytics & Platform KPIs**: Total platform revenue, active subscribers, aggregate charity contributions, and prize pool history charts.
+- **User Directory (`/admin/users`)**: Searchable directory with role management (`subscriber` vs `admin`) and direct score management.
+- **Draw Management (`/admin/draws`)**:
+  - Simulated draw runner with instant winner previews and rollover calculation.
+  - Official one-click publishing lock.
+- **Charity Partner Portal (`/admin/charities`)**: CRUD management of charity partners, logo/banner uploads, and community events scheduling.
+- **Claims Verification Desk (`/admin/winners`)**: Audit table displaying claimant information, prize tier, secure scorecard image viewer, and approve/reject controls.
+
+---
+
+## 🗄️ Database Architecture & Entity Relationships
+
+The relational schema is built on PostgreSQL with Row Level Security (RLS) enforcing strict tenant boundaries.
+
+```mermaid
+erDiagram
+    PROFILES ||--o{ SCORES : "logs (max 5)"
+    PROFILES ||--o| SUBSCRIPTIONS : "maintains"
+    PROFILES ||--o{ DRAW_ENTRIES : "enters"
+    PROFILES ||--o{ WINNERS : "claims"
+    PROFILES }o--|| CHARITIES : "allocates to"
+
+    DRAWS ||--o{ DRAW_ENTRIES : "contains"
+    DRAWS ||--o{ WINNERS : "produces"
+
+    CHARITIES ||--o{ DONATIONS : "receives"
+    PROFILES ||--o{ DONATIONS : "makes"
+
+    PROFILES {
+        uuid id PK
+        string email
+        string full_name
+        string role "subscriber | admin"
+        uuid charity_id FK
+        integer charity_percent "10 - 100"
+        timestamp created_at
+    }
+
+    SCORES {
+        uuid id PK
+        uuid user_id FK
+        integer score "1 - 45 (Stableford)"
+        date played_on
+        string course_name
+        timestamp created_at
+    }
+
+    SUBSCRIPTIONS {
+        uuid id PK
+        uuid user_id FK
+        string stripe_customer_id
+        string stripe_subscription_id
+        string status "active | trialing | past_due"
+        string price_id
+        timestamp current_period_end
+    }
+
+    CHARITIES {
+        uuid id PK
+        string name
+        string slug UK
+        text description
+        string logo_url
+        string website_url
+        boolean is_active
+    }
+
+    DRAWS {
+        uuid id PK
+        string draw_name
+        string status "draft | simulated | published"
+        integer winning_numbers "Array[5]"
+        numeric prize_pool
+        numeric rollover_amount
+        timestamp draw_date
+    }
+
+    DRAW_ENTRIES {
+        uuid id PK
+        uuid draw_id FK
+        uuid user_id FK
+        integer numbers "Array[5]"
+        integer match_count "0 - 5"
+        timestamp created_at
+    }
+
+    WINNERS {
+        uuid id PK
+        uuid draw_id FK
+        uuid user_id FK
+        string prize_tier "match_5 | match_4 | match_3"
+        numeric payout_amount
+        string status "pending | proof_uploaded | approved | rejected | paid"
+        string proof_url
+        timestamp claimed_at
+    }
+```
+
+---
+
+## 🛡️ Security, Access Control & Compliance
+
+| Layer | Implementation Strategy |
+|---|---|
+| **Row Level Security (RLS)** | Enabled on all tables. Golfers can only read and mutate their own scores, tickets, and profiles. |
+| **Admin Route Protection** | Dual-gated via Next.js Middleware and Supabase Service Role queries. Non-admins visiting `/admin` are immediately redirected with an unauthorized warning. |
+| **Sensitive Proof Storage** | Winner scorecards are isolated in non-public storage. Only pre-signed, short-lived URLs are generated for authenticated administrative auditing. |
+| **Payment Webhook Verification** | Stripe webhooks validate cryptographic signatures via `STRIPE_WEBHOOK_SECRET` before updating subscription states. |
+| **Input Validation** | All inputs (scores, charities, profiles, passwords) are validated with strict **Zod schemas** on both client and server before execution. |
+
+---
+
+## 🎨 UI/UX Design Philosophy
+
+Golvo follows a **Linear-inspired high-density dark aesthetic**:
+
+- **Color Palette**: Pitch black background (`#08090A`), surface elevation cards (`#0F1011`), hairline border rings (`rgba(255, 255, 255, 0.08)`), and electric violet accents (`#5E6AD2`).
+- **Micro-Interactions**: Ambient radial glow accents, subtle hover lifts, interactive doodle buttons (`BackStarButton`), and toast alerts for every transactional state.
+- **Keyboard-First**: Global Command Palette accessible via `⌘K` / `Ctrl+K` with real-time fuzzy search.
+- **Responsive Layout**: Fluid flex/grid architecture with an edge-to-edge drawer navigation for mobile viewports, guaranteed zero horizontal overflow.
+- **Accessibility**: Audited against **WCAG 2.x AA** standards using `@axe-core/playwright`.
+
+---
+
+<div align="center">
+
+**Golvo Platform** — Engineered for golfers who play for the score, the prize, and the cause.
+
+*Copyright © 2026 Golvo. All rights reserved.*
+
+</div>

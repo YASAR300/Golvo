@@ -197,6 +197,7 @@ export default function AdminDrawsPage() {
         <div className="flex justify-end pt-2">
           <button
             type="button"
+            data-testid="draw-simulate"
             onClick={handleRunSimulation}
             disabled={simulating}
             className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#5E6AD2] hover:bg-[#4E5AC0] text-white text-xs font-semibold shadow-lg shadow-[#5E6AD2]/20 transition-all cursor-pointer disabled:opacity-50"
@@ -209,7 +210,7 @@ export default function AdminDrawsPage() {
 
       {/* Simulation Result Preview (if generated) */}
       {simulationResult && (
-        <div className="p-6 rounded-xl bg-[#0F1011] border border-[#5E6AD2]/30 space-y-6 animate-fade-in relative overflow-hidden">
+        <div data-testid="draw-preview" className="p-6 rounded-xl bg-[#0F1011] border border-[#5E6AD2]/30 space-y-6 animate-fade-in relative overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
             <div>
               <div className="flex items-center gap-2">
@@ -228,6 +229,7 @@ export default function AdminDrawsPage() {
             {simulationResult.draw?.status === "simulated" && (
               <button
                 type="button"
+                data-testid="draw-publish"
                 onClick={() => handlePublishDraw(simulationResult.draw.id)}
                 disabled={publishing}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold transition-all cursor-pointer shadow-lg shadow-emerald-500/20"
@@ -366,7 +368,7 @@ export default function AdminDrawsPage() {
 
                       <td className="py-3 px-4">
                         {d.status === "published" ? (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span data-testid="draw-published" className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                             Published
                           </span>
@@ -420,6 +422,7 @@ export default function AdminDrawsPage() {
                         {d.status === "simulated" && (
                           <button
                             type="button"
+                            data-testid="draw-publish"
                             onClick={() => handlePublishDraw(d.id)}
                             disabled={publishing}
                             className="px-2.5 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 text-[11px] font-medium transition-colors"

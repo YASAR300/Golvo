@@ -68,6 +68,15 @@ async function getOrCreateUser(email, password, fullName, role = "subscriber") {
     console.log(`  ✓ Created user account: ${email}`);
   } else {
     console.log(`  ℹ User already exists: ${email}`);
+    const { error: updateErr } = await supabase.auth.admin.updateUserById(user.id, {
+      password: password,
+      email_confirm: true,
+    });
+    if (updateErr) {
+      console.warn(`  ⚠ Could not update password for ${email}:`, updateErr.message);
+    } else {
+      console.log(`  ✓ Synced password for: ${email}`);
+    }
   }
 
   // Ensure profile exists with specified role

@@ -168,6 +168,7 @@ export default function CharitiesDirectoryPage() {
                 placeholder="Search charities by name, mission, or focus..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                data-testid="charity-search"
                 className="w-full pl-11 pr-4 py-3 rounded-[10px] bg-[#0F1011] border border-white/10 text-white placeholder:text-[#8A8F98] text-sm focus:outline-none focus:border-[#5E6AD2] focus:ring-1 focus:ring-[#5E6AD2] transition-all"
               />
             </div>
@@ -196,7 +197,9 @@ export default function CharitiesDirectoryPage() {
             {filteredCharities.map((charity) => (
               <Card
                 key={charity.id || charity.slug}
-                className="bg-[#0F1011] border-white/[0.08] hover:border-white/20 transition-all duration-300 flex flex-col justify-between group overflow-hidden"
+                data-testid="charity-card"
+                onClick={() => window.location.href = `/charities/${charity.slug}`}
+                className="bg-[#0F1011] border-white/[0.08] hover:border-white/20 transition-all duration-300 flex flex-col justify-between group overflow-hidden cursor-pointer"
               >
                 <div>
                   {/* Card Image */}

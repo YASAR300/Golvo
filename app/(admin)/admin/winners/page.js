@@ -184,7 +184,7 @@ export default function AdminWinnersPage() {
       {/* Winners Table */}
       <div className="rounded-xl border border-white/[0.08] bg-[#0F1011] overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table data-testid="winners-table" className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="border-b border-white/[0.08] bg-white/[0.02] text-[#8A8F98] font-medium">
                 <th className="py-3 px-4">Golfer</th>
@@ -248,22 +248,22 @@ export default function AdminWinnersPage() {
 
                     <td className="py-3 px-4">
                       {w.verification_status === "approved" ? (
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span data-testid="winner-status" className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                           <CheckCircle2 className="w-3 h-3" />
                           Approved
                         </span>
                       ) : w.verification_status === "submitted" ? (
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                        <span data-testid="winner-status" className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-blue-500/10 text-blue-400 border border-blue-500/20">
                           <Clock className="w-3 h-3" />
                           Submitted
                         </span>
                       ) : w.verification_status === "rejected" ? (
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-red-500/10 text-red-400 border border-red-500/20">
+                        <span data-testid="winner-status" className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-red-500/10 text-red-400 border border-red-500/20">
                           <XCircle className="w-3 h-3" />
                           Rejected
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.04] text-[#8A8F98] border border-white/[0.08]">
+                        <span data-testid="winner-status" className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-white/[0.04] text-[#8A8F98] border border-white/[0.08]">
                           Awaiting Proof
                         </span>
                       )}
@@ -284,6 +284,7 @@ export default function AdminWinnersPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           type="button"
+                          data-testid="winner-audit"
                           onClick={() => openInspectModal(w)}
                           className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-white/[0.06] hover:bg-white/[0.12] text-white text-[11px] font-medium transition-colors"
                         >
@@ -440,6 +441,7 @@ export default function AdminWinnersPage() {
                 <div className="flex items-center justify-end gap-3 pt-2">
                   <button
                     type="button"
+                    data-testid="winner-reject"
                     onClick={() => handleReviewAction("reject")}
                     disabled={isProcessing}
                     className="px-3.5 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-medium transition-colors cursor-pointer"
@@ -449,6 +451,7 @@ export default function AdminWinnersPage() {
 
                   <button
                     type="button"
+                    data-testid="winner-approve"
                     onClick={() => handleReviewAction("approve")}
                     disabled={isProcessing}
                     className="px-4 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold shadow-md shadow-emerald-500/20 transition-all cursor-pointer"

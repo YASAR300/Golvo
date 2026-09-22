@@ -194,6 +194,7 @@ export default function SignupPage() {
             onChange={(e) => setFullName(e.target.value)}
             required
             autoComplete="name"
+            data-testid="signup-name"
             leftIcon={<User className="w-4 h-4" />}
           />
 
@@ -205,6 +206,7 @@ export default function SignupPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
+            data-testid="signup-email"
             leftIcon={<Mail className="w-4 h-4" />}
           />
 
@@ -216,6 +218,7 @@ export default function SignupPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
             autoComplete="new-password"
+            data-testid="signup-password"
             leftIcon={<Lock className="w-4 h-4" />}
             rightIcon={
               <button
@@ -253,6 +256,7 @@ export default function SignupPage() {
             variant="primary"
             size="md"
             isLoading={isLoading}
+            data-testid="signup-submit"
             className="w-full h-11 text-sm font-semibold mt-3"
             rightIcon={!isLoading && <ArrowRight className="w-4 h-4" />}
           >

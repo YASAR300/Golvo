@@ -23,6 +23,29 @@ import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/Card";
 import { createClient } from "@/lib/supabase/client";
 
+const defaultCharities = [
+  {
+    id: "1",
+    name: "Youth on Course",
+    slug: "youth-on-course",
+    description: "Subsidizing rounds of golf for young players nationwide for $5 or less, removing socio-economic barriers to play.",
+    image_url: "https://images.unsplash.com/photo-1535131749006-b7f58c99034b?auto=format&fit=crop&w=800&q=80",
+    is_featured: true,
+    category: "Youth Access",
+    events: [{ title: "National Junior Championship", date: "Oct 15, 2026", location: "Pebble Beach" }],
+  },
+  {
+    id: "2",
+    name: "First Tee Foundation",
+    slug: "first-tee",
+    description: "Empowering kids and teens through educational programs that build character and instill life-enhancing values through the game of golf.",
+    image_url: "https://images.unsplash.com/photo-1587174486073-ae5e5cff23aa?auto=format&fit=crop&w=800&q=80",
+    is_featured: false,
+    category: "Youth Access",
+    events: [{ title: "Autumn Leadership Summit", date: "Nov 02, 2026", location: "Atlanta, GA" }],
+  },
+];
+
 export default function CharityProfilePage({ params }) {
   const router = useRouter();
   const resolvedParams = use(params);
@@ -50,9 +73,18 @@ export default function CharityProfilePage({ params }) {
             ...data,
             events: Array.isArray(data.events) ? data.events : [],
           });
+        } else {
+          const fallback = defaultCharities.find((c) => c.slug === slug);
+          if (fallback) {
+            setCharity(fallback);
+          }
         }
       } catch (err) {
         console.warn("Could not load charity:", err);
+        const fallback = defaultCharities.find((c) => c.slug === slug);
+        if (fallback) {
+          setCharity(fallback);
+        }
       } finally {
         setIsLoading(false);
       }
