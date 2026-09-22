@@ -293,7 +293,7 @@ export function CommandPalette({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             autoFocus
-            className="w-full bg-transparent text-sm text-white placeholder:text-[#8A8F98] focus:outline-none"
+            className="w-full bg-transparent text-sm text-white placeholder:text-[#8A8F98] outline-none border-none ring-0 focus:outline-none focus:border-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 focus-visible:shadow-none"
           />
           {search && (
             <button

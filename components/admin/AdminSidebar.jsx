@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
+import { Spinner } from "@/components/ui/Spinner";
 import { logoutAction } from "@/app/(auth)/actions";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -79,11 +80,12 @@ export function AdminSidebar({ isOpen, onClose }) {
   const handleLogout = async () => {
     setIsLoggingOut(true);
     try {
-      await logoutAction();
-      router.push("/login");
-    } catch (e) {
-      console.error(e);
-      setIsLoggingOut(false);
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      window.location.href = "/login";
+    } catch {
+      await logoutAction().catch(() => {});
+      window.location.href = "/login";
     }
   };
 
@@ -201,9 +203,13 @@ export function AdminSidebar({ isOpen, onClose }) {
               onClick={handleLogout}
               disabled={isLoggingOut}
               title="Sign out"
-              className="p-1.5 rounded text-[#8A8F98] hover:text-white hover:bg-white/[0.06] transition-colors"
+              className="p-1.5 rounded text-[#8A8F98] hover:text-[#EB5757] hover:bg-[#EB5757]/10 transition-colors disabled:opacity-50"
             >
-              <LogOut className="w-4 h-4" />
+              {isLoggingOut ? (
+                <Spinner size="xs" className="text-[#EB5757]" />
+              ) : (
+                <LogOut className="w-4 h-4" />
+              )}
             </button>
           </div>
         </div>

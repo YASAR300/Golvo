@@ -98,7 +98,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Smooth Focus Rings */
-:focus-visible {
+:focus-visible:not(input):not(textarea):not(select) {
   outline: none;
   box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--accent);
   border-radius: 8px;

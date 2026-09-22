@@ -2,8 +2,10 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { LogOut, User, Shield, ChevronDown } from "lucide-react";
 import { logoutAction } from "@/app/(auth)/actions";
+import { createClient } from "@/lib/supabase/client";
 import { Badge } from "./Badge";
 import { Spinner } from "./Spinner";
 import { cn } from "@/lib/utils";
@@ -36,8 +38,14 @@ export function UserMenu({ user, profile, className = "" }) {
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
-    toast.loading("Signing out...", { id: "signout" });
-    await logoutAction();
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+      window.location.href = "/login";
+    } catch {
+      await logoutAction().catch(() => {});
+      window.location.href = "/login";
+    }
   };
 
   const copyEmail = () => {
