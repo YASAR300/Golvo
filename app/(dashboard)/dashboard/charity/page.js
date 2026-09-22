@@ -159,6 +159,7 @@ export default function DashboardCharityPage() {
           </span>
         </div>
 
+        <div className="space-y-4">
           <div className="flex items-center gap-4">
             <input
               type="range"
